@@ -1,0 +1,152 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String        @id @default(uuid())
+  name          String
+  email         String        @unique
+  avatar_url    String?
+  created_at    DateTime      @default(now())
+  projects      Project[]
+  favorites     Favorite[]
+  activity_logs ActivityLog[]
+}
+
+model Project {
+  id           String           @id @default(uuid())
+  user_id      String
+  name         String
+  description  String?
+  client_name  String?
+  logo_url     String?
+  status       ProjectStatus    @default(PLANNING)
+  tech_stack   String[]
+  is_archived  Boolean          @default(false)
+  created_at   DateTime         @default(now())
+  updated_at   DateTime         @updatedAt
+  user         User             @relation(fields: [user_id], references: [id])
+  links        ProjectLink[]
+  notes        ProjectNote[]
+  commands     ProjectCommand[]
+  environments Environment[]
+  credentials  Credential[]
+  deployments  Deployment[]
+  favorites    Favorite[]
+}
+
+enum ProjectStatus {
+  PLANNING
+  DEVELOPMENT
+  TESTING
+  PRODUCTION
+  COMPLETED
+}
+
+model ProjectLink {
+  id          String   @id @default(uuid())
+  project_id  String
+  title       String
+  url         String
+  category    String
+  description String?
+  created_at  DateTime @default(now())
+  project     Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+}
+
+model ProjectNote {
+  id          String   @id @default(uuid())
+  project_id  String
+  title       String
+  content     String
+  tags        String[]
+  is_pinned   Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  project     Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+}
+
+model ProjectCommand {
+  id          String   @id @default(uuid())
+  project_id  String
+  title       String
+  command     String
+  category    String
+  description String?
+  created_at  DateTime @default(now())
+  project     Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+}
+
+model Environment {
+  id          String                @id @default(uuid())
+  project_id  String
+  name        String
+  variables   EnvironmentVariable[]
+  created_at  DateTime              @default(now())
+  project     Project               @relation(fields: [project_id], references: [id], onDelete: Cascade)
+}
+
+model EnvironmentVariable {
+  id             String      @id @default(uuid())
+  environment_id String
+  key            String
+  value          String
+  description    String?
+  is_secret      Boolean     @default(false)
+  created_at     DateTime    @default(now())
+  environment    Environment @relation(fields: [environment_id], references: [id], onDelete: Cascade)
+}
+
+model Credential {
+  id          String   @id @default(uuid())
+  project_id  String
+  title       String
+  type        String
+  username    String?
+  password    String
+  description String?
+  created_at  DateTime @default(now())
+  project     Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+}
+
+model Deployment {
+  id               String   @id @default(uuid())
+  project_id       String
+  hosting_provider String
+  server_ip        String?
+  production_url   String?
+  deployed_at      DateTime
+  notes            String?
+  status           String
+  created_at       DateTime @default(now())
+  project          Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id         String   @id @default(uuid())
+  user_id    String
+  project_id String
+  created_at DateTime @default(now())
+  user       User     @relation(fields: [user_id], references: [id])
+  project    Project  @relation(fields: [project_id], references: [id])
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  user_id     String
+  action      String
+  entity_type String
+  entity_id   String
+  entity_name String
+  created_at  DateTime @default(now())
+  user        User     @relation(fields: [user_id], references: [id])
+}
