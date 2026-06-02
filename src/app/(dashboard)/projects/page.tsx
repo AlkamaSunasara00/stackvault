@@ -10,11 +10,13 @@ import { PROJECT_STATUSES } from '@/utils/constants'
 import { ProjectStatus } from '@/types'
 import { FolderPlus, Search, SlidersHorizontal, Archive } from 'lucide-react'
 import { clsx } from 'clsx'
+import { useAuth } from '@/hooks/useAuth'
 
 type FilterStatus = 'all' | ProjectStatus
 type SortKey = 'updatedAt' | 'name' | 'createdAt'
 
 export default function ProjectsPage() {
+  const { user } = useAuth()
   const [createOpen, setCreateOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all')
   const [sort, setSort] = useState<SortKey>('updatedAt')
@@ -46,9 +48,11 @@ export default function ProjectsPage() {
             {projects.length} project{projects.length !== 1 ? 's' : ''} in your vault
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)} iconLeft={<FolderPlus className="w-4 h-4" />}>
-          New Project
-        </Button>
+        {!user?.is_guest && (
+          <Button onClick={() => setCreateOpen(true)} iconLeft={<FolderPlus className="w-4 h-4" />}>
+            New Project
+          </Button>
+        )}
       </div>
 
       {/* Filter bar */}
@@ -132,7 +136,7 @@ export default function ProjectsPage() {
             ? `No ${statusFilter.toLowerCase()} projects`
             : 'No projects yet'
         }
-        onCreateClick={() => setCreateOpen(true)}
+        onCreateClick={user?.is_guest ? undefined : () => setCreateOpen(true)}
       />
 
       <CreateProjectModal isOpen={createOpen} onClose={() => setCreateOpen(false)} />

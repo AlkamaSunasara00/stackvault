@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { Project, ProjectLink, ProjectNote, ProjectCommand, Environment, EnvironmentVariable, Credential, Deployment } from '@/types'
+import { Project, ProjectLink, ProjectNote, Environment, EnvironmentVariable, Credential, RoadmapItem } from '@/types'
 
 async function fetchProject(id: string) {
   const { data } = await axios.get<{ project: Project }>(`/api/projects/${id}`)
@@ -55,21 +55,21 @@ export function useProject(id: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
   })
 
-  // ---- Commands ----
-  const createCommand = useMutation({
-    mutationFn: (data: Partial<ProjectCommand>) =>
-      axios.post('/api/commands', { ...data, project_id: id }).then((r) => r.data.command),
+  // ---- Roadmap Items ----
+  const createRoadmapItem = useMutation({
+    mutationFn: (data: Partial<RoadmapItem>) =>
+      axios.post('/api/roadmap', { ...data, project_id: id }).then((r) => r.data.item),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
   })
 
-  const updateCommand = useMutation({
-    mutationFn: ({ commandId, data }: { commandId: string; data: Partial<ProjectCommand> }) =>
-      axios.put(`/api/commands/${commandId}`, data).then((r) => r.data.command),
+  const updateRoadmapItem = useMutation({
+    mutationFn: ({ itemId, data }: { itemId: string; data: Partial<RoadmapItem> }) =>
+      axios.put(`/api/roadmap/${itemId}`, data).then((r) => r.data.item),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
   })
 
-  const deleteCommand = useMutation({
-    mutationFn: (commandId: string) => axios.delete(`/api/commands/${commandId}`),
+  const deleteRoadmapItem = useMutation({
+    mutationFn: (itemId: string) => axios.delete(`/api/roadmap/${itemId}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
   })
 
@@ -83,6 +83,12 @@ export function useProject(id: string) {
   const createEnvVariable = useMutation({
     mutationFn: (data: Partial<EnvironmentVariable>) =>
       axios.post('/api/environments/variables', data).then((r) => r.data.variable),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
+  })
+
+  const createEnvVariablesBulk = useMutation({
+    mutationFn: (data: { environment_id: string; variables: Array<{ key: string; value: string; is_secret: boolean; description?: string }> }) =>
+      axios.post('/api/environments/variables', data).then((r) => r.data.variables),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
   })
 
@@ -115,24 +121,6 @@ export function useProject(id: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
   })
 
-  // ---- Deployments ----
-  const createDeployment = useMutation({
-    mutationFn: (data: Partial<Deployment>) =>
-      axios.post('/api/deployments', { ...data, project_id: id }).then((r) => r.data.deployment),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
-  })
-
-  const updateDeployment = useMutation({
-    mutationFn: ({ depId, data }: { depId: string; data: Partial<Deployment> }) =>
-      axios.put(`/api/deployments/${depId}`, data).then((r) => r.data.deployment),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
-  })
-
-  const deleteDeployment = useMutation({
-    mutationFn: (depId: string) => axios.delete(`/api/deployments/${depId}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
-  })
-
   return {
     project: query.data,
     isLoading: query.isLoading,
@@ -146,22 +134,19 @@ export function useProject(id: string) {
     createNote: createNote.mutateAsync,
     updateNote: updateNote.mutateAsync,
     deleteNote: deleteNote.mutateAsync,
-    // Commands
-    createCommand: createCommand.mutateAsync,
-    updateCommand: updateCommand.mutateAsync,
-    deleteCommand: deleteCommand.mutateAsync,
+    // Roadmap Items
+    createRoadmapItem: createRoadmapItem.mutateAsync,
+    updateRoadmapItem: updateRoadmapItem.mutateAsync,
+    deleteRoadmapItem: deleteRoadmapItem.mutateAsync,
     // Environments
     createEnvironment: createEnvironment.mutateAsync,
     createEnvVariable: createEnvVariable.mutateAsync,
+    createEnvVariablesBulk: createEnvVariablesBulk.mutateAsync,
     updateEnvVariable: updateEnvVariable.mutateAsync,
     deleteEnvVariable: deleteEnvVariable.mutateAsync,
     // Credentials
     createCredential: createCredential.mutateAsync,
     updateCredential: updateCredential.mutateAsync,
     deleteCredential: deleteCredential.mutateAsync,
-    // Deployments
-    createDeployment: createDeployment.mutateAsync,
-    updateDeployment: updateDeployment.mutateAsync,
-    deleteDeployment: deleteDeployment.mutateAsync,
   }
 }

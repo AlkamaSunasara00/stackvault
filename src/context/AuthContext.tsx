@@ -90,27 +90,80 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s)
-      setSupabaseUser(s?.user ?? null)
-      if (s?.user) syncUserToDb(s.user)
-      setLoading(false)
+    let active = true
+
+    async function checkAuth() {
+      try {
+        const { data: { session: s } } = await supabase.auth.getSession()
+        if (s?.user) {
+          setSession(s)
+          setSupabaseUser(s.user)
+          await syncUserToDb(s.user)
+        } else {
+          const profileRes = await fetch('/api/auth/profile')
+          if (profileRes.ok) {
+            const data = await profileRes.json()
+            if (data.user) {
+              if (active) setUser(data.user)
+            }
+          }
+        }
+      } catch {
+        // ignore
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+
+    checkAuth()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, s) => {
+      if (s?.user) {
+        setSession(s)
+        setSupabaseUser(s.user)
+        await syncUserToDb(s.user)
+      } else {
+        setSession(null)
+        setSupabaseUser(null)
+        try {
+          const profileRes = await fetch('/api/auth/profile')
+          if (profileRes.ok) {
+            const data = await profileRes.json()
+            if (data.user) {
+              if (active) setUser(data.user)
+              return
+            }
+          }
+        } catch {}
+        if (active) setUser(null)
+      }
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s)
-      setSupabaseUser(s?.user ?? null)
-      if (s?.user) syncUserToDb(s.user)
-      else setUser(null)
-    })
-
-    return () => subscription.unsubscribe()
+    return () => {
+      active = false
+      subscription.unsubscribe()
+    }
   }, [supabase, syncUserToDb])
 
   const signIn = useCallback(
     async (email: string, password: string) => {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) throw new Error(error.message)
+      if (error) {
+        // Fallback to guest login
+        const res = await fetch('/api/auth/guest-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setUser(data.user)
+          router.push('/dashboard')
+          return
+        }
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || error.message)
+      }
       router.push('/dashboard')
     },
     [supabase, router]
@@ -131,6 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut()
+    await fetch('/api/auth/guest-logout', { method: 'POST' }).catch(() => {})
     setUser(null)
     router.push('/login')
   }, [supabase, router])

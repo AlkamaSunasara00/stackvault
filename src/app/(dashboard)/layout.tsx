@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
 import { MobileDrawer } from '@/components/layout/MobileDrawer'
+import { GuestBanner } from '@/components/layout/GuestBanner'
 
 export default function DashboardLayout({
   children,
@@ -18,6 +19,7 @@ export default function DashboardLayout({
       <MobileDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <Header onMenuClick={() => setDrawerOpen(true)} />
       <main className="lg:ml-60 pt-16 transition-all duration-300">
+        <GuestBanner />
         <div className="p-4 lg:p-6">{children}</div>
       </main>
     </div>

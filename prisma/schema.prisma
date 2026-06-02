@@ -12,14 +12,15 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(uuid())
-  name          String
-  email         String        @unique
-  avatar_url    String?
-  created_at    DateTime      @default(now())
-  projects      Project[]
-  favorites     Favorite[]
-  activity_logs ActivityLog[]
+  id             String        @id @default(uuid())
+  name           String
+  email          String        @unique
+  avatar_url     String?
+  guest_password String?
+  created_at     DateTime      @default(now())
+  projects       Project[]
+  favorites      Favorite[]
+  activity_logs  ActivityLog[]
 }
 
 model Project {
@@ -37,10 +38,9 @@ model Project {
   user         User             @relation(fields: [user_id], references: [id])
   links        ProjectLink[]
   notes        ProjectNote[]
-  commands     ProjectCommand[]
   environments Environment[]
   credentials  Credential[]
-  deployments  Deployment[]
+  roadmap      RoadmapItem[]
   favorites    Favorite[]
 }
 
@@ -75,14 +75,16 @@ model ProjectNote {
   project     Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
 }
 
-model ProjectCommand {
+model RoadmapItem {
   id          String   @id @default(uuid())
   project_id  String
   title       String
-  command     String
-  category    String
   description String?
+  status      String   @default("PLANNED") // PLANNED, IN_PROGRESS, COMPLETED, BLOCKED
+  priority    String   @default("MEDIUM")  // LOW, MEDIUM, HIGH
+  target_date String?
   created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
   project     Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
 }
 
@@ -116,19 +118,6 @@ model Credential {
   description String?
   created_at  DateTime @default(now())
   project     Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
-}
-
-model Deployment {
-  id               String   @id @default(uuid())
-  project_id       String
-  hosting_provider String
-  server_ip        String?
-  production_url   String?
-  deployed_at      DateTime
-  notes            String?
-  status           String
-  created_at       DateTime @default(now())
-  project          Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
 }
 
 model Favorite {

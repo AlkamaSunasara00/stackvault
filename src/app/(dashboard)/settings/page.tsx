@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAuth } from '@/hooks/useAuth'
-import { Settings, User, Shield, Bell, Upload } from 'lucide-react'
+import { Settings, User, Shield, Bell, Upload, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const profileSchema = z.object({
@@ -28,6 +28,45 @@ export default function SettingsPage() {
   const { user, supabaseUser, updateProfile } = useAuth()
   const [activeTab, setActiveTab] = useState('profile')
   const [loading, setLoading] = useState(false)
+  const [guestPassword, setGuestPassword] = useState(user?.guest_password || '')
+  const [showGuestPassword, setShowGuestPassword] = useState(false)
+  const [guestSaving, setGuestSaving] = useState(false)
+
+  useEffect(() => {
+    if (user?.guest_password) {
+      setGuestPassword(user.guest_password)
+    }
+  }, [user])
+
+  const handleSaveGuestPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!guestPassword || guestPassword.trim().length < 6) {
+      toast.error('Guest password must be at least 6 characters')
+      return
+    }
+    setGuestSaving(true)
+    try {
+      await updateProfile({ guest_password: guestPassword })
+      toast.success('View-Only Guest Password saved!')
+    } catch {
+      toast.error('Failed to update guest password')
+    } finally {
+      setGuestSaving(false)
+    }
+  }
+
+  const handleClearGuestPassword = async () => {
+    setGuestSaving(true)
+    try {
+      await updateProfile({ guest_password: null })
+      setGuestPassword('')
+      toast.success('Guest access disabled')
+    } catch {
+      toast.error('Failed to disable guest access')
+    } finally {
+      setGuestSaving(false)
+    }
+  }
 
   const displayName = user?.name || supabaseUser?.user_metadata?.name || 'User'
   const avatarUrl = user?.avatar_url || supabaseUser?.user_metadata?.avatar_url
@@ -51,6 +90,11 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in max-w-3xl">
+      {user?.is_guest && (
+        <div className="p-4 rounded-xl bg-warning/[0.08] border border-warning/20 text-warning text-sm">
+          ⚠️ You are logged in as a View-Only Guest. Settings are read-only and cannot be modified.
+        </div>
+      )}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-secondary/20 rounded-xl flex items-center justify-center">
           <Settings className="w-5 h-5 text-secondary" />
@@ -109,6 +153,7 @@ export default function SettingsPage() {
               <Input
                 label="Full Name"
                 error={errors.name?.message}
+                disabled={user?.is_guest}
                 {...register('name')}
               />
               <Input
@@ -119,7 +164,7 @@ export default function SettingsPage() {
                 hint="Email cannot be changed here. Contact support."
               />
               <div className="flex justify-end">
-                <Button type="submit" loading={loading}>Save Changes</Button>
+                <Button type="submit" loading={loading} disabled={user?.is_guest}>Save Changes</Button>
               </div>
             </form>
           </div>
@@ -143,12 +188,74 @@ export default function SettingsPage() {
 
       {activeTab === 'security' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pt-2">
+          {/* Guest Access Card */}
+          <div className="glass-card p-6">
+            <h3 className="text-base font-semibold text-white mb-2 flex items-center gap-2">
+              <Shield className="w-5 h-5 text-primary" /> View-Only Guest Access
+            </h3>
+            <p className="text-muted text-sm mb-4">
+              Create a special password you can share with clients, product managers, or teammates. This allows them to view all your projects, credentials, and settings without edit permissions.
+            </p>
+
+            <form onSubmit={handleSaveGuestPassword} className="space-y-4 max-w-md">
+              <div className="relative">
+                <Input
+                  label="View-Only Password"
+                  type={showGuestPassword ? 'text' : 'password'}
+                  placeholder={guestPassword ? '••••••••' : 'No guest password set'}
+                  value={guestPassword}
+                  onChange={(e) => setGuestPassword(e.target.value)}
+                  disabled={user?.is_guest}
+                  hint="Share this password along with your email address for view-only access."
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowGuestPassword(!showGuestPassword)}
+                  className="absolute right-3 top-[34px] p-1 text-muted hover:text-white transition-colors"
+                  disabled={user?.is_guest}
+                >
+                  {showGuestPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              <div className="flex gap-2">
+                <Button type="submit" loading={guestSaving} disabled={user?.is_guest}>
+                  {user?.guest_password ? 'Update Guest Password' : 'Set Guest Password'}
+                </Button>
+                {user?.guest_password && (
+                  <Button type="button" variant="danger" onClick={handleClearGuestPassword} loading={guestSaving} disabled={user?.is_guest}>
+                    Disable Guest Access
+                  </Button>
+                )}
+              </div>
+            </form>
+
+            {user?.guest_password && (
+              <div className="mt-6 p-4 rounded-xl bg-primary/[0.04] border border-white/[0.06] space-y-3">
+                <p className="text-xs font-semibold text-primary uppercase tracking-wider">How to share access</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-xs text-muted block">Share Email</span>
+                    <span className="mono text-white text-xs select-all">{user.email}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted block">Share Password</span>
+                    <span className="mono text-white text-xs select-all">{user.guest_password}</span>
+                  </div>
+                </div>
+                <div className="pt-2 text-xs text-muted border-t border-white/[0.04]">
+                  Guests log in via the standard login page using these credentials. They can view everything but cannot add, edit, or delete data.
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="glass-card p-6">
             <h3 className="text-base font-semibold text-white mb-4">Change Password</h3>
             <p className="text-muted text-sm mb-4">
               You are signed in via Supabase Auth. Use the forgot password flow to reset your password.
             </p>
-            <Button variant="secondary" size="sm">Send Password Reset Email</Button>
+            <Button variant="secondary" size="sm" disabled={user?.is_guest}>Send Password Reset Email</Button>
           </div>
 
           <div className="glass-card p-6 border-danger/20">
@@ -156,7 +263,7 @@ export default function SettingsPage() {
             <p className="text-muted text-sm mb-4">
               Delete your account and all associated data permanently.
             </p>
-            <Button variant="danger" size="sm">Delete Account</Button>
+            <Button variant="danger" size="sm" disabled={user?.is_guest}>Delete Account</Button>
           </div>
         </motion.div>
       )}

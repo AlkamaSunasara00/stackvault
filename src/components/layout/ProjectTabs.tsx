@@ -5,18 +5,17 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { usePathname, useParams } from 'next/navigation'
 import {
-  LayoutGrid, Link as LinkIcon, FileCode, Terminal, FileText, Lock, Rocket,
+  LayoutGrid, Link as LinkIcon, FileCode, FileText, Lock, ListTodo,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
 const tabs = [
   { id: 'overview', label: 'Overview', icon: LayoutGrid },
+  { id: 'roadmap', label: 'Roadmap', icon: ListTodo },
   { id: 'links', label: 'Links', icon: LinkIcon },
   { id: 'env', label: 'Env Variables', icon: FileCode },
-  { id: 'commands', label: 'Commands', icon: Terminal },
   { id: 'notes', label: 'Notes', icon: FileText },
   { id: 'credentials', label: 'Credentials', icon: Lock },
-  { id: 'deployment', label: 'Deployment', icon: Rocket },
 ]
 
 export function ProjectTabs() {

@@ -8,7 +8,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Avatar } from '@/components/ui/Avatar'
 import { formatDate, formatRelative } from '@/utils/formatDate'
 import {
-  Link as LinkIcon, Terminal, Lock, Rocket, FileText, FileCode,
+  Link as LinkIcon, Lock, FileText, FileCode, ListTodo,
   Star, Clock, Calendar, User,
 } from 'lucide-react'
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
@@ -16,11 +16,10 @@ import { clsx } from 'clsx'
 import Link from 'next/link'
 
 const statCards = [
+  { key: 'roadmap', label: 'Roadmap Tasks', icon: ListTodo, color: 'text-sky-400', bg: 'bg-sky-500/20', href: 'roadmap' },
   { key: 'links', label: 'Links', icon: LinkIcon, color: 'text-secondary', bg: 'bg-secondary/20', href: 'links' },
   { key: 'notes', label: 'Notes', icon: FileText, color: 'text-warning', bg: 'bg-warning/20', href: 'notes' },
-  { key: 'commands', label: 'Commands', icon: Terminal, color: 'text-success', bg: 'bg-success/20', href: 'commands' },
   { key: 'credentials', label: 'Credentials', icon: Lock, color: 'text-purple-400', bg: 'bg-purple-500/20', href: 'credentials' },
-  { key: 'deployments', label: 'Deployments', icon: Rocket, color: 'text-primary', bg: 'bg-primary/20', href: 'deployment' },
 ] as const
 
 interface OverviewProps {
@@ -111,7 +110,7 @@ export default function OverviewPage({ params }: OverviewProps) {
       </motion.div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {statCards.map((card, i) => {
           const count = project._count?.[card.key as keyof typeof project._count] ?? 0
           const Icon = card.icon

@@ -2,12 +2,13 @@
 
 import React, { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Eye, EyeOff, Copy, Check, Trash2, Pencil, FileCode, Search } from 'lucide-react'
+import { Plus, Eye, EyeOff, Copy, Check, Trash2, Pencil, FileCode, Search, ClipboardList, Info } from 'lucide-react'
 import { useProject } from '@/hooks/useProject'
+import { useAuth } from '@/hooks/useAuth'
 import { Environment, EnvironmentVariable } from '@/types'
 import { Modal, ConfirmModal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
+import { Input, Textarea } from '@/components/ui/Input'
 import { copyToClipboard } from '@/utils/copyToClipboard'
 import { useForm } from 'react-hook-form'
 import { clsx } from 'clsx'
@@ -20,7 +21,8 @@ interface EnvManagerProps {
 }
 
 export function EnvManager({ projectId }: EnvManagerProps) {
-  const { project, createEnvironment, createEnvVariable, updateEnvVariable, deleteEnvVariable, isLoading } = useProject(projectId)
+  const { user } = useAuth()
+  const { project, createEnvironment, createEnvVariable, createEnvVariablesBulk, updateEnvVariable, deleteEnvVariable, isLoading } = useProject(projectId)
   const [activeTab, setActiveTab] = useState('LOCAL')
   const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set())
   const [copiedId, setCopiedId] = useState<string | null>(null)
@@ -28,6 +30,73 @@ export function EnvManager({ projectId }: EnvManagerProps) {
   const [editVar, setEditVar] = useState<EnvironmentVariable | null>(null)
   const [deleteVar, setDeleteVar] = useState<EnvironmentVariable | null>(null)
   const [search, setSearch] = useState('')
+  const [importEnvOpen, setImportEnvOpen] = useState(false)
+  const [envRawText, setEnvRawText] = useState('')
+  const [parsedVars, setParsedVars] = useState<Array<{ key: string; value: string; is_secret: boolean; selected: boolean; description: string }>>([])
+
+  const parseEnvText = (text: string) => {
+    const lines = text.split('\n')
+    const vars: Array<{ key: string; value: string; is_secret: boolean; selected: boolean; description: string }> = []
+    
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('//')) {
+        continue
+      }
+      
+      const eqIndex = trimmed.indexOf('=')
+      if (eqIndex === -1) continue
+      
+      const key = trimmed.slice(0, eqIndex).trim()
+      let value = trimmed.slice(eqIndex + 1).trim()
+      
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1)
+      }
+      
+      if (key) {
+        vars.push({
+          key,
+          value,
+          is_secret: true,
+          selected: true,
+          description: '',
+        })
+      }
+    }
+    setParsedVars(vars)
+  }
+
+  const handleImportEnv = async () => {
+    await ensureEnvExists()
+    const env = project?.environments?.find((e) => e.name === activeTab)
+    const envId = env?.id || activeEnv?.id
+    if (!envId) { toast.error('Create environment first'); return }
+    
+    const selectedVars = parsedVars.filter(v => v.selected)
+    if (selectedVars.length === 0) {
+      toast.error('No variables selected to import')
+      return
+    }
+    
+    try {
+      await createEnvVariablesBulk({
+        environment_id: envId,
+        variables: selectedVars.map(v => ({
+          key: v.key,
+          value: v.value,
+          is_secret: v.is_secret,
+          description: v.description
+        }))
+      })
+      toast.success(`Successfully imported ${selectedVars.length} variables!`)
+      setImportEnvOpen(false)
+      setEnvRawText('')
+      setParsedVars([])
+    } catch {
+      toast.error('Failed to import variables')
+    }
+  }
 
   const environments = project?.environments ?? []
   const activeEnv = environments.find((e) => e.name === activeTab)
@@ -156,9 +225,16 @@ export function EnvManager({ projectId }: EnvManagerProps) {
               Copy All
             </Button>
           )}
-          <Button size="sm" onClick={() => { reset({ is_secret: false }); setAddVarOpen(true) }} iconLeft={<Plus className="w-3.5 h-3.5" />}>
-            Add Variable
-          </Button>
+          {!user?.is_guest && (
+            <>
+              <Button variant="secondary" size="sm" onClick={() => { setEnvRawText(''); setParsedVars([]); setImportEnvOpen(true) }} iconLeft={<ClipboardList className="w-3.5 h-3.5" />}>
+                Import .env
+              </Button>
+              <Button size="sm" onClick={() => { reset({ is_secret: false }); setAddVarOpen(true) }} iconLeft={<Plus className="w-3.5 h-3.5" />}>
+                Add Variable
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -168,9 +244,16 @@ export function EnvManager({ projectId }: EnvManagerProps) {
           <FileCode className="w-8 h-8 text-muted mx-auto mb-3 opacity-50" />
           <p className="text-white font-medium mb-1">No variables in {activeTab}</p>
           <p className="text-muted text-sm mb-4">Add environment variables for this environment.</p>
-          <Button size="sm" onClick={() => setAddVarOpen(true)} iconLeft={<Plus className="w-4 h-4" />}>
-            Add Variable
-          </Button>
+          {!user?.is_guest && (
+            <div className="flex justify-center gap-3">
+              <Button variant="secondary" size="sm" onClick={() => { setEnvRawText(''); setParsedVars([]); setImportEnvOpen(true) }} iconLeft={<ClipboardList className="w-4 h-4" />}>
+                Import .env
+              </Button>
+              <Button size="sm" onClick={() => setAddVarOpen(true)} iconLeft={<Plus className="w-4 h-4" />}>
+                Add Variable
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="bg-black/40 rounded-xl border border-white/[0.08] overflow-hidden">
@@ -213,24 +296,28 @@ export function EnvManager({ projectId }: EnvManagerProps) {
                   >
                     {copiedId === v.id ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
                   </button>
-                  <button
-                    onClick={() => {
-                      setEditVar(v)
-                      setValue('key', v.key)
-                      setValue('value', v.value)
-                      setValue('description', v.description ?? '')
-                      setValue('is_secret', v.is_secret)
-                    }}
-                    className="p-1 rounded text-muted hover:text-white transition-colors"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setDeleteVar(v)}
-                    className="p-1 rounded text-muted hover:text-danger transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  {!user?.is_guest && (
+                    <>
+                      <button
+                        onClick={() => {
+                          setEditVar(v)
+                          setValue('key', v.key)
+                          setValue('value', v.value)
+                          setValue('description', v.description ?? '')
+                          setValue('is_secret', v.is_secret)
+                        }}
+                        className="p-1 rounded text-muted hover:text-white transition-colors"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteVar(v)}
+                        className="p-1 rounded text-muted hover:text-danger transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </motion.div>
             )
@@ -281,6 +368,82 @@ export function EnvManager({ projectId }: EnvManagerProps) {
         confirmLabel="Delete"
         dangerous
       />
+      {/* Import .env Modal */}
+      <Modal isOpen={importEnvOpen} onClose={() => { setImportEnvOpen(false) }} title="Import from .env File" size="lg">
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-primary/[0.04] border border-primary/20 text-xs text-primary/90">
+            <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+            <p>
+              Paste your <strong>.env</strong> file contents below. We will parse it and store each key and value as a separate variable, exactly like Vercel. Lines starting with # are automatically ignored.
+            </p>
+          </div>
+
+          <Textarea
+            label="Paste .env Contents"
+            placeholder="DATABASE_URL=postgresql://user:pass@localhost:5432/db&#10;JWT_SECRET=super-secret-key&#10;PORT=3000"
+            rows={6}
+            value={envRawText}
+            onChange={(e) => {
+              setEnvRawText(e.target.value)
+              parseEnvText(e.target.value)
+            }}
+          />
+
+          {parsedVars.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="text-xs font-semibold text-white uppercase tracking-wider">
+                Preview Parsed Variables ({parsedVars.length})
+              </h4>
+              <div className="max-h-[220px] overflow-y-auto border border-white/[0.08] rounded-xl overflow-hidden divide-y divide-white/[0.04] bg-black/20">
+                {parsedVars.map((v, i) => (
+                  <div key={v.key} className="flex items-center gap-3 px-3 py-2 text-xs">
+                    <input
+                      type="checkbox"
+                      checked={v.selected}
+                      onChange={(e) => {
+                        const copy = [...parsedVars]
+                        copy[i].selected = e.target.checked
+                        setParsedVars(copy)
+                      }}
+                      className="rounded accent-primary"
+                    />
+                    <span className="mono text-primary font-medium w-1/3 truncate shrink-0 select-none">
+                      {v.key}
+                    </span>
+                    <span className="mono text-muted flex-1 truncate select-none">
+                      {v.value}
+                    </span>
+                    <label className="flex items-center gap-1.5 cursor-pointer shrink-0 text-muted hover:text-white transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={v.is_secret}
+                        onChange={(e) => {
+                          const copy = [...parsedVars]
+                          copy[i].is_secret = e.target.checked
+                          setParsedVars(copy)
+                        }}
+                        className="rounded"
+                      />
+                      <span>Secret</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="ghost" onClick={() => { setImportEnvOpen(false) }}>Cancel</Button>
+            <Button
+              type="button"
+              disabled={parsedVars.filter(v => v.selected).length === 0}
+              onClick={handleImportEnv}
+            >
+              Import {parsedVars.filter(v => v.selected).length} Variables
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </>
   )
 }

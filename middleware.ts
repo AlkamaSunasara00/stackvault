@@ -33,7 +33,17 @@ export async function middleware(request: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession()
 
+  const guestSession = request.cookies.get('vault_guest_session')?.value
+
   const { pathname } = request.nextUrl
+
+  // Block any mutating requests from guest sessions
+  if (guestSession && request.method !== 'GET' && !pathname.startsWith('/api/auth')) {
+    return new NextResponse(JSON.stringify({ error: 'Guest access is read-only' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
 
   // Public routes — always allow
   const publicRoutes = ['/login', '/register', '/forgot-password']
@@ -41,18 +51,24 @@ export async function middleware(request: NextRequest) {
   const isApiAuthRoute = pathname.startsWith('/api/auth')
 
   if (isApiAuthRoute || isPublicRoute) {
+    // If they have any session and try to go to login/register, redirect to dashboard
+    if (isPublicRoute && (session || guestSession)) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/dashboard'
+      return NextResponse.redirect(redirectUrl)
+    }
     return supabaseResponse
   }
 
   // Redirect root to dashboard or login
   if (pathname === '/') {
     const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = session ? '/dashboard' : '/login'
+    redirectUrl.pathname = (session || guestSession) ? '/dashboard' : '/login'
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Protected routes — require session
-  if (!session) {
+  // Protected routes — require session or guest session
+  if (!session && !guestSession) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/login'
     redirectUrl.searchParams.set('redirectTo', pathname)

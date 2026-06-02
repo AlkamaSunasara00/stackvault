@@ -2,16 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { logActivity } from '@/lib/activity'
-
-async function getUser() {
-  const supabase = await createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
-}
+import { getAuthUser } from '@/lib/auth-helper'
 
 export async function GET(request: NextRequest) {
   try {
-    const supaUser = await getUser()
+    const supaUser = await getAuthUser()
     if (!supaUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { searchParams } = request.nextUrl
@@ -32,7 +27,7 @@ export async function GET(request: NextRequest) {
       },
       include: {
         _count: {
-          select: { links: true, notes: true, commands: true, credentials: true, deployments: true },
+          select: { links: true, notes: true, roadmap: true, credentials: true },
         },
         favorites: { where: { user_id: supaUser.id } },
       },
@@ -48,8 +43,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supaUser = await getUser()
+    const supaUser = await getAuthUser()
     if (!supaUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (supaUser.is_guest) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const formData = await request.formData()
     const name = formData.get('name') as string
@@ -88,7 +84,7 @@ export async function POST(request: NextRequest) {
         tech_stack,
         logo_url,
       },
-      include: { _count: { select: { links: true, notes: true, commands: true, credentials: true, deployments: true } } },
+      include: { _count: { select: { links: true, notes: true, roadmap: true, credentials: true } } },
     })
 
     await logActivity(supaUser.id, 'CREATED', 'PROJECT', project.id, project.name)

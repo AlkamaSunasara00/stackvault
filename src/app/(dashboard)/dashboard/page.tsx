@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { FolderKanban, Link, Terminal, Lock, Rocket, Star } from 'lucide-react'
+import { FolderKanban, Link, Lock, Star, ListTodo } from 'lucide-react'
 import { StatsCard, StatsCardSkeleton } from '@/components/dashboard/StatsCard'
 import { RecentProjects } from '@/components/dashboard/RecentProjects'
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
@@ -27,9 +27,8 @@ export default function DashboardPage() {
   const stats = {
     total: projects.length,
     links: projects.reduce((acc, p) => acc + (p._count?.links ?? 0), 0),
-    commands: projects.reduce((acc, p) => acc + (p._count?.commands ?? 0), 0),
+    roadmap: projects.reduce((acc, p) => acc + (p._count?.roadmap ?? 0), 0),
     credentials: projects.reduce((acc, p) => acc + (p._count?.credentials ?? 0), 0),
-    deployments: projects.reduce((acc, p) => acc + (p._count?.deployments ?? 0), 0),
     favorites: projects.filter((p) => p.favorites && p.favorites.length > 0).length,
   }
 
@@ -45,10 +44,9 @@ export default function DashboardPage() {
 
   const statItems = [
     { icon: <FolderKanban className="w-5 h-5 text-primary" />, label: 'Total Projects', value: stats.total, colorClass: 'bg-primary/20' },
+    { icon: <ListTodo className="w-5 h-5 text-sky-400" />, label: 'Roadmap Tasks', value: stats.roadmap, colorClass: 'bg-sky-500/20' },
     { icon: <Link className="w-5 h-5 text-secondary" />, label: 'Saved Links', value: stats.links, colorClass: 'bg-secondary/20' },
-    { icon: <Terminal className="w-5 h-5 text-warning" />, label: 'Commands', value: stats.commands, colorClass: 'bg-warning/20' },
     { icon: <Lock className="w-5 h-5 text-purple-400" />, label: 'Credentials', value: stats.credentials, colorClass: 'bg-purple-500/20' },
-    { icon: <Rocket className="w-5 h-5 text-success" />, label: 'Deployments', value: stats.deployments, colorClass: 'bg-success/20' },
     { icon: <Star className="w-5 h-5 text-yellow-400" />, label: 'Favorites', value: stats.favorites, colorClass: 'bg-yellow-500/20' },
   ]
 
@@ -77,9 +75,9 @@ export default function DashboardPage() {
       {/* Stats grid */}
       <div>
         <h3 className="text-sm font-semibold text-muted uppercase tracking-wider mb-4">Overview</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {isLoading
-            ? [...Array(6)].map((_, i) => <StatsCardSkeleton key={i} index={i} />)
+            ? [...Array(5)].map((_, i) => <StatsCardSkeleton key={i} index={i} />)
             : statItems.map((stat, i) => (
                 <StatsCard key={stat.label} {...stat} index={i} />
               ))}

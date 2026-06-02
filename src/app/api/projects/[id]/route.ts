@@ -2,12 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { logActivity } from '@/lib/activity'
-
-async function getUser() {
-  const supabase = await createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
-}
+import { getAuthUser } from '@/lib/auth-helper'
 
 export async function GET(
   _request: NextRequest,
@@ -15,7 +10,7 @@ export async function GET(
 ) {
   const { id } = await params
   try {
-    const supaUser = await getUser()
+    const supaUser = await getAuthUser()
     if (!supaUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const project = await prisma.project.findFirst({
@@ -23,7 +18,7 @@ export async function GET(
       include: {
         links: { orderBy: { created_at: 'desc' } },
         notes: { orderBy: [{ is_pinned: 'desc' }, { updated_at: 'desc' }] },
-        commands: { orderBy: { created_at: 'desc' } },
+        roadmap: { orderBy: { created_at: 'desc' } },
         environments: {
           include: {
             variables: { orderBy: { key: 'asc' } },
@@ -31,8 +26,7 @@ export async function GET(
           orderBy: { created_at: 'asc' },
         },
         credentials: { orderBy: { created_at: 'desc' } },
-        deployments: { orderBy: { deployed_at: 'desc' } },
-        _count: { select: { links: true, notes: true, commands: true, credentials: true, deployments: true } },
+        _count: { select: { links: true, notes: true, roadmap: true, credentials: true } },
       },
     })
 
@@ -51,8 +45,9 @@ export async function PUT(
 ) {
   const { id } = await params
   try {
-    const supaUser = await getUser()
+    const supaUser = await getAuthUser()
     if (!supaUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (supaUser.is_guest) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const formData = await request.formData()
 
@@ -111,8 +106,9 @@ export async function DELETE(
 ) {
   const { id } = await params
   try {
-    const supaUser = await getUser()
+    const supaUser = await getAuthUser()
     if (!supaUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (supaUser.is_guest) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const project = await prisma.project.findFirst({ where: { id, user_id: supaUser.id } })
     if (!project) return NextResponse.json({ error: 'Not found' }, { status: 404 })

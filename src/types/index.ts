@@ -22,16 +22,6 @@ export enum LinkCategory {
   OTHER = 'OTHER',
 }
 
-export enum CommandCategory {
-  SETUP = 'SETUP',
-  DEPLOYMENT = 'DEPLOYMENT',
-  GIT = 'GIT',
-  DOCKER = 'DOCKER',
-  DATABASE = 'DATABASE',
-  TESTING = 'TESTING',
-  OTHER = 'OTHER',
-}
-
 export enum CredentialType {
   DATABASE = 'DATABASE',
   SERVER = 'SERVER',
@@ -45,6 +35,8 @@ export interface User {
   name: string
   email: string
   avatar_url?: string | null
+  guest_password?: string | null
+  is_guest?: boolean
   created_at: string
 }
 
@@ -62,17 +54,15 @@ export interface Project {
   updated_at: string
   links?: ProjectLink[]
   notes?: ProjectNote[]
-  commands?: ProjectCommand[]
   environments?: Environment[]
   credentials?: Credential[]
-  deployments?: Deployment[]
+  roadmap?: RoadmapItem[]
   favorites?: Favorite[]
   _count?: {
     links: number
     notes: number
-    commands: number
     credentials: number
-    deployments: number
+    roadmap: number
   }
 }
 
@@ -97,14 +87,16 @@ export interface ProjectNote {
   updated_at: string
 }
 
-export interface ProjectCommand {
+export interface RoadmapItem {
   id: string
   project_id: string
   title: string
-  command: string
-  category: string
   description?: string | null
+  status: string // PLANNED, IN_PROGRESS, COMPLETED, BLOCKED
+  priority: string // LOW, MEDIUM, HIGH
+  target_date?: string | null
   created_at: string
+  updated_at: string
 }
 
 export interface Environment {
@@ -133,18 +125,6 @@ export interface Credential {
   username?: string | null
   password: string
   description?: string | null
-  created_at: string
-}
-
-export interface Deployment {
-  id: string
-  project_id: string
-  hosting_provider: string
-  server_ip?: string | null
-  production_url?: string | null
-  deployed_at: string
-  notes?: string | null
-  status: string
   created_at: string
 }
 
@@ -177,7 +157,7 @@ export interface Notification {
 
 export interface SearchResult {
   id: string
-  type: 'project' | 'note' | 'link' | 'command' | 'credential'
+  type: 'project' | 'note' | 'link' | 'roadmap' | 'credential'
   title: string
   subtitle?: string
   projectId?: string
@@ -187,7 +167,7 @@ export interface SearchResults {
   projects: SearchResult[]
   notes: SearchResult[]
   links: SearchResult[]
-  commands: SearchResult[]
+  roadmap: SearchResult[]
   credentials: SearchResult[]
 }
 

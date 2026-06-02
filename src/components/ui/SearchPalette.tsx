@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, X, FolderKanban, FileText, Link, Terminal, Lock, ArrowRight, Loader2 } from 'lucide-react'
+import { Search, X, FolderKanban, FileText, Link, Lock, ArrowRight, Loader2, ListTodo } from 'lucide-react'
 import { useSearch } from '@/context/SearchContext'
 import { useRouter } from 'next/navigation'
 import { SearchResult } from '@/types'
@@ -11,7 +11,7 @@ const typeIcons: Record<string, React.ReactNode> = {
   project: <FolderKanban className="w-4 h-4 text-primary" />,
   note: <FileText className="w-4 h-4 text-secondary" />,
   link: <Link className="w-4 h-4 text-warning" />,
-  command: <Terminal className="w-4 h-4 text-success" />,
+  roadmap: <ListTodo className="w-4 h-4 text-sky-400" />,
   credential: <Lock className="w-4 h-4 text-purple-400" />,
 }
 
@@ -19,7 +19,7 @@ const typeLabels: Record<string, string> = {
   project: 'Project',
   note: 'Note',
   link: 'Link',
-  command: 'Command',
+  roadmap: 'Roadmap',
   credential: 'Credential',
 }
 
@@ -27,7 +27,7 @@ const typePaths: Record<string, (r: SearchResult) => string> = {
   project: (r) => `/projects/${r.id}/overview`,
   note: (r) => `/projects/${r.projectId}/notes`,
   link: (r) => `/projects/${r.projectId}/links`,
-  command: (r) => `/projects/${r.projectId}/commands`,
+  roadmap: (r) => `/projects/${r.projectId}/roadmap`,
   credential: (r) => `/projects/${r.projectId}/credentials`,
 }
 
@@ -45,7 +45,7 @@ export function SearchPalette() {
         ...results.projects,
         ...results.notes,
         ...results.links,
-        ...results.commands,
+        ...results.roadmap,
         ...results.credentials,
       ]
     : []
@@ -61,9 +61,9 @@ export function SearchPalette() {
   const grouped = results
     ? Object.entries({
         Projects: results.projects,
+        Roadmap: results.roadmap,
         Notes: results.notes,
         Links: results.links,
-        Commands: results.commands,
         Credentials: results.credentials,
       }).filter(([, items]) => items.length > 0)
     : []
@@ -102,7 +102,7 @@ export function SearchPalette() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search projects, notes, links, commands..."
+                placeholder="Search projects, notes, links, roadmap..."
                 className="flex-1 bg-transparent text-white placeholder:text-muted outline-none text-base"
               />
               <div className="flex items-center gap-2">

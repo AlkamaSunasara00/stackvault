@@ -26,7 +26,7 @@ export const ProjectCard = React.memo(function ProjectCard({
   isFavorited = false,
 }: ProjectCardProps) {
   const { deleteProject, toggleFavorite, updateProject } = useProjects()
-  const { addNotification } = useAuth()
+  const { addNotification, user } = useAuth()
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [favorited, setFavorited] = useState(isFavorited)
@@ -114,25 +114,29 @@ export const ProjectCard = React.memo(function ProjectCard({
             </div>
           </div>
           <div className="flex items-center gap-1.5 ml-2 shrink-0">
-            <button
-              onClick={handleFavorite}
-              className={clsx(
-                'p-1.5 rounded-lg transition-colors',
-                favorited
-                  ? 'text-warning bg-warning/10'
-                  : 'text-muted hover:text-warning hover:bg-warning/10 opacity-0 group-hover:opacity-100'
-              )}
-            >
-              <Star className={clsx('w-4 h-4', favorited && 'fill-current')} />
-            </button>
-            <Dropdown
-              trigger={
-                <button className="p-1.5 rounded-lg text-muted hover:text-white hover:bg-white/5 opacity-0 group-hover:opacity-100 transition-all">
-                  <MoreVertical className="w-4 h-4" />
+            {!user?.is_guest && (
+              <>
+                <button
+                  onClick={handleFavorite}
+                  className={clsx(
+                    'p-1.5 rounded-lg transition-colors',
+                    favorited
+                      ? 'text-warning bg-warning/10'
+                      : 'text-muted hover:text-warning hover:bg-warning/10 opacity-0 group-hover:opacity-100'
+                  )}
+                >
+                  <Star className={clsx('w-4 h-4', favorited && 'fill-current')} />
                 </button>
-              }
-              items={menuItems}
-            />
+                <Dropdown
+                  trigger={
+                    <button className="p-1.5 rounded-lg text-muted hover:text-white hover:bg-white/5 opacity-0 group-hover:opacity-100 transition-all">
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                  }
+                  items={menuItems}
+                />
+              </>
+            )}
           </div>
         </div>
 
@@ -183,7 +187,7 @@ export const ProjectCard = React.memo(function ProjectCard({
         onClose={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
         title="Delete Project"
-        message={`Are you sure you want to delete "${project.name}"? This will permanently delete all associated links, notes, commands, credentials, and deployments.`}
+        message={`Are you sure you want to delete "${project.name}"? This will permanently delete all associated links, notes, roadmap tasks, and credentials.`}
         confirmLabel="Delete Project"
         isLoading={isDeleting}
         dangerous

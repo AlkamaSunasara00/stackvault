@@ -1,4 +1,4 @@
-import { ProjectStatus, LinkCategory, CommandCategory, CredentialType } from '@/types'
+import { ProjectStatus, LinkCategory, CredentialType } from '@/types'
 
 export const PROJECT_STATUSES = [
   { value: ProjectStatus.PLANNING, label: 'Planning', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
@@ -20,16 +20,6 @@ export const LINK_CATEGORIES = [
   { value: LinkCategory.OTHER, label: 'Other', icon: 'Link', color: 'text-muted' },
 ] as const
 
-export const COMMAND_CATEGORIES = [
-  { value: CommandCategory.SETUP, label: 'Setup', icon: 'Settings', color: 'bg-blue-500/20 text-blue-400' },
-  { value: CommandCategory.DEPLOYMENT, label: 'Deployment', icon: 'Rocket', color: 'bg-green-500/20 text-green-400' },
-  { value: CommandCategory.GIT, label: 'Git', icon: 'GitBranch', color: 'bg-orange-500/20 text-orange-400' },
-  { value: CommandCategory.DOCKER, label: 'Docker', icon: 'Container', color: 'bg-blue-400/20 text-blue-300' },
-  { value: CommandCategory.DATABASE, label: 'Database', icon: 'Database', color: 'bg-purple-500/20 text-purple-400' },
-  { value: CommandCategory.TESTING, label: 'Testing', icon: 'FlaskConical', color: 'bg-yellow-500/20 text-yellow-400' },
-  { value: CommandCategory.OTHER, label: 'Other', icon: 'Terminal', color: 'bg-gray-500/20 text-gray-400' },
-] as const
-
 export const CREDENTIAL_TYPES = [
   { value: CredentialType.DATABASE, label: 'Database', icon: 'Database', color: 'bg-purple-500/20 text-purple-400' },
   { value: CredentialType.SERVER, label: 'Server', icon: 'Server', color: 'bg-blue-500/20 text-blue-400' },
@@ -40,18 +30,6 @@ export const CREDENTIAL_TYPES = [
 
 export const ENVIRONMENT_NAMES = ['LOCAL', 'DEVELOPMENT', 'STAGING', 'PRODUCTION'] as const
 
-export const DEPLOYMENT_STATUSES = [
-  { value: 'success', label: 'Success', color: 'text-primary' },
-  { value: 'failed', label: 'Failed', color: 'text-danger' },
-  { value: 'pending', label: 'Pending', color: 'text-warning' },
-  { value: 'rollback', label: 'Rollback', color: 'text-orange-400' },
-] as const
-
-export const HOSTING_PROVIDERS = [
-  'Vercel', 'AWS', 'Google Cloud', 'Azure', 'DigitalOcean', 'Heroku', 'Netlify',
-  'Railway', 'Render', 'Fly.io', 'Cloudflare', 'Linode', 'Vultr', 'Other',
-] as const
-
 export const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
   { href: '/projects', label: 'Projects', icon: 'FolderKanban' },
@@ -61,10 +39,9 @@ export const NAV_ITEMS = [
 
 export const PROJECT_TAB_ITEMS = [
   { href: 'overview', label: 'Overview', icon: 'LayoutGrid' },
+  { href: 'roadmap', label: 'Roadmap', icon: 'ListTodo' },
   { href: 'links', label: 'Links', icon: 'Link' },
   { href: 'env', label: 'Env Variables', icon: 'FileCode' },
-  { href: 'commands', label: 'Commands', icon: 'Terminal' },
   { href: 'notes', label: 'Notes', icon: 'FileText' },
   { href: 'credentials', label: 'Credentials', icon: 'Lock' },
-  { href: 'deployment', label: 'Deployment', icon: 'Rocket' },
 ] as const
