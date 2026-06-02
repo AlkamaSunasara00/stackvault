@@ -5,7 +5,6 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
 import { MobileDrawer } from '@/components/layout/MobileDrawer'
 import { ProjectTabs } from '@/components/layout/ProjectTabs'
-import { GuestBanner } from '@/components/layout/GuestBanner'
 
 export default function ProjectLayout({
   children,
@@ -21,7 +20,6 @@ export default function ProjectLayout({
       <Header onMenuClick={() => setDrawerOpen(true)} />
 
       <div className="lg:ml-60 pt-16 transition-all duration-300">
-        <GuestBanner />
         {/* Tab bar */}
         <div className="border-b border-white/[0.06] bg-background/80 backdrop-blur-sm sticky top-16 z-10">
           <ProjectTabs />

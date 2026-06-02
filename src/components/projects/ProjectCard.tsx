@@ -187,7 +187,7 @@ export const ProjectCard = React.memo(function ProjectCard({
         onClose={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
         title="Delete Project"
-        message={`Are you sure you want to delete "${project.name}"? This will permanently delete all associated links, notes, roadmap tasks, and credentials.`}
+        message={`Are you sure you want to delete "${project.name}"? This will permanently delete all associated links, notes, integrations, and credentials.`}
         confirmLabel="Delete Project"
         isLoading={isDeleting}
         dangerous

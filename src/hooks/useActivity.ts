@@ -13,12 +13,12 @@ async function fetchActivity(projectId?: string, page = 1) {
 }
 
 export function useActivity(projectId?: string, page = 1) {
-  const { session } = useAuth()
+  const { session, user } = useAuth()
 
   return useQuery({
     queryKey: ['activity', projectId, page],
     queryFn: () => fetchActivity(projectId, page),
-    enabled: !!session,
+    enabled: !!session || !!user,
     staleTime: 1000 * 30,
   })
 }

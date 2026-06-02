@@ -27,7 +27,7 @@ const EMPTY_RESULTS: SearchResults = {
   projects: [],
   notes: [],
   links: [],
-  roadmap: [],
+  integrations: [],
   credentials: [],
 }
 

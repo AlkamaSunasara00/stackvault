@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { Project, ProjectLink, ProjectNote, Environment, EnvironmentVariable, Credential, RoadmapItem } from '@/types'
+import { Project, ProjectLink, ProjectNote, Environment, EnvironmentVariable, Credential, ProjectIntegration } from '@/types'
 
 async function fetchProject(id: string) {
   const { data } = await axios.get<{ project: Project }>(`/api/projects/${id}`)
@@ -55,21 +55,21 @@ export function useProject(id: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
   })
 
-  // ---- Roadmap Items ----
-  const createRoadmapItem = useMutation({
-    mutationFn: (data: Partial<RoadmapItem>) =>
-      axios.post('/api/roadmap', { ...data, project_id: id }).then((r) => r.data.item),
+  // ---- Integrations ----
+  const createIntegration = useMutation({
+    mutationFn: (data: Partial<ProjectIntegration>) =>
+      axios.post('/api/integrations', { ...data, project_id: id }).then((r) => r.data.integration),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
   })
 
-  const updateRoadmapItem = useMutation({
-    mutationFn: ({ itemId, data }: { itemId: string; data: Partial<RoadmapItem> }) =>
-      axios.put(`/api/roadmap/${itemId}`, data).then((r) => r.data.item),
+  const updateIntegration = useMutation({
+    mutationFn: ({ itemId, data }: { itemId: string; data: Partial<ProjectIntegration> }) =>
+      axios.put(`/api/integrations/${itemId}`, data).then((r) => r.data.integration),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
   })
 
-  const deleteRoadmapItem = useMutation({
-    mutationFn: (itemId: string) => axios.delete(`/api/roadmap/${itemId}`),
+  const deleteIntegration = useMutation({
+    mutationFn: (itemId: string) => axios.delete(`/api/integrations/${itemId}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
   })
 
@@ -134,10 +134,10 @@ export function useProject(id: string) {
     createNote: createNote.mutateAsync,
     updateNote: updateNote.mutateAsync,
     deleteNote: deleteNote.mutateAsync,
-    // Roadmap Items
-    createRoadmapItem: createRoadmapItem.mutateAsync,
-    updateRoadmapItem: updateRoadmapItem.mutateAsync,
-    deleteRoadmapItem: deleteRoadmapItem.mutateAsync,
+    // Integrations
+    createIntegration: createIntegration.mutateAsync,
+    updateIntegration: updateIntegration.mutateAsync,
+    deleteIntegration: deleteIntegration.mutateAsync,
     // Environments
     createEnvironment: createEnvironment.mutateAsync,
     createEnvVariable: createEnvVariable.mutateAsync,

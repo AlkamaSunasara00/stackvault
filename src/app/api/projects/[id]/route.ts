@@ -18,7 +18,7 @@ export async function GET(
       include: {
         links: { orderBy: { created_at: 'desc' } },
         notes: { orderBy: [{ is_pinned: 'desc' }, { updated_at: 'desc' }] },
-        roadmap: { orderBy: { created_at: 'desc' } },
+        integrations: { orderBy: { created_at: 'desc' } },
         environments: {
           include: {
             variables: { orderBy: { key: 'asc' } },
@@ -26,7 +26,7 @@ export async function GET(
           orderBy: { created_at: 'asc' },
         },
         credentials: { orderBy: { created_at: 'desc' } },
-        _count: { select: { links: true, notes: true, roadmap: true, credentials: true } },
+        _count: { select: { links: true, notes: true, integrations: true, credentials: true } },
       },
     })
 

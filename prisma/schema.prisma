@@ -40,7 +40,7 @@ model Project {
   notes        ProjectNote[]
   environments Environment[]
   credentials  Credential[]
-  roadmap      RoadmapItem[]
+  integrations ProjectIntegration[]
   favorites    Favorite[]
 }
 
@@ -75,14 +75,15 @@ model ProjectNote {
   project     Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
 }
 
-model RoadmapItem {
+model ProjectIntegration {
   id          String   @id @default(uuid())
   project_id  String
-  title       String
+  name        String
+  category    String   // e.g., PAYMENTS, AI, AUTH, MAILING, DATABASE, OTHER
+  status      String   @default("ACTIVE") // ACTIVE, TESTING, DEPRECATED, PLANNED
+  url         String?
+  api_doc_url String?
   description String?
-  status      String   @default("PLANNED") // PLANNED, IN_PROGRESS, COMPLETED, BLOCKED
-  priority    String   @default("MEDIUM")  // LOW, MEDIUM, HIGH
-  target_date String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
   project     Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)

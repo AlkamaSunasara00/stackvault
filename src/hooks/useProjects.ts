@@ -44,13 +44,13 @@ async function toggleFavorite(projectId: string) {
 }
 
 export function useProjects(filters: ProjectFilters = {}) {
-  const { session } = useAuth()
+  const { session, user } = useAuth()
   const queryClient = useQueryClient()
 
   const query = useQuery({
     queryKey: ['projects', filters],
     queryFn: () => fetchProjects(filters),
-    enabled: !!session,
+    enabled: !!session || !!user,
     staleTime: 1000 * 60 * 2,
   })
 

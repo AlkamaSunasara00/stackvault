@@ -56,13 +56,13 @@ export interface Project {
   notes?: ProjectNote[]
   environments?: Environment[]
   credentials?: Credential[]
-  roadmap?: RoadmapItem[]
+  integrations?: ProjectIntegration[]
   favorites?: Favorite[]
   _count?: {
     links: number
     notes: number
     credentials: number
-    roadmap: number
+    integrations: number
   }
 }
 
@@ -87,14 +87,15 @@ export interface ProjectNote {
   updated_at: string
 }
 
-export interface RoadmapItem {
+export interface ProjectIntegration {
   id: string
   project_id: string
-  title: string
+  name: string
+  category: string // PAYMENTS, AI, AUTH, MAILING, DATABASE, OTHER
+  status: string // ACTIVE, TESTING, DEPRECATED, PLANNED
+  url?: string | null
+  api_doc_url?: string | null
   description?: string | null
-  status: string // PLANNED, IN_PROGRESS, COMPLETED, BLOCKED
-  priority: string // LOW, MEDIUM, HIGH
-  target_date?: string | null
   created_at: string
   updated_at: string
 }
@@ -157,7 +158,7 @@ export interface Notification {
 
 export interface SearchResult {
   id: string
-  type: 'project' | 'note' | 'link' | 'roadmap' | 'credential'
+  type: 'project' | 'note' | 'link' | 'integration' | 'credential'
   title: string
   subtitle?: string
   projectId?: string
@@ -167,7 +168,7 @@ export interface SearchResults {
   projects: SearchResult[]
   notes: SearchResult[]
   links: SearchResult[]
-  roadmap: SearchResult[]
+  integrations: SearchResult[]
   credentials: SearchResult[]
 }
 

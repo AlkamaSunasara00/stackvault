@@ -8,11 +8,11 @@ export async function GET(request: NextRequest) {
     if (!supaUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const q = request.nextUrl.searchParams.get('q') || ''
-    if (!q.trim()) return NextResponse.json({ projects: [], notes: [], links: [], roadmap: [], credentials: [] })
+    if (!q.trim()) return NextResponse.json({ projects: [], notes: [], links: [], integrations: [], credentials: [] })
 
     const userId = supaUser.id
 
-    const [projects, notes, links, roadmap, credentials] = await Promise.all([
+    const [projects, notes, links, integrations, credentials] = await Promise.all([
       prisma.project.findMany({
         where: {
           user_id: userId,
@@ -47,15 +47,15 @@ export async function GET(request: NextRequest) {
         select: { id: true, title: true, url: true, project_id: true },
         take: 5,
       }),
-      prisma.roadmapItem.findMany({
+      prisma.projectIntegration.findMany({
         where: {
           project: { user_id: userId },
           OR: [
-            { title: { contains: q, mode: 'insensitive' } },
+            { name: { contains: q, mode: 'insensitive' } },
             { description: { contains: q, mode: 'insensitive' } },
           ],
         },
-        select: { id: true, title: true, status: true, project_id: true },
+        select: { id: true, name: true, status: true, project_id: true, category: true },
         take: 5,
       }),
       prisma.credential.findMany({
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
       projects: projects.map((p) => ({ id: p.id, type: 'project', title: p.name, subtitle: p.status })),
       notes: notes.map((n) => ({ id: n.id, type: 'note', title: n.title, projectId: n.project_id })),
       links: links.map((l) => ({ id: l.id, type: 'link', title: l.title, subtitle: l.url, projectId: l.project_id })),
-      roadmap: roadmap.map((r) => ({ id: r.id, type: 'roadmap', title: r.title, subtitle: r.status, projectId: r.project_id })),
+      integrations: integrations.map((i) => ({ id: i.id, type: 'integration', title: i.name, subtitle: `${i.category} • ${i.status}`, projectId: i.project_id })),
       credentials: credentials.map((cr) => ({ id: cr.id, type: 'credential', title: cr.title, subtitle: cr.type, projectId: cr.project_id })),
     })
   } catch (error) {

@@ -8,7 +8,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Avatar } from '@/components/ui/Avatar'
 import { formatDate, formatRelative } from '@/utils/formatDate'
 import {
-  Link as LinkIcon, Lock, FileText, FileCode, ListTodo,
+  Link as LinkIcon, Lock, FileText, FileCode, Blocks,
   Star, Clock, Calendar, User,
 } from 'lucide-react'
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
@@ -16,7 +16,7 @@ import { clsx } from 'clsx'
 import Link from 'next/link'
 
 const statCards = [
-  { key: 'roadmap', label: 'Roadmap Tasks', icon: ListTodo, color: 'text-sky-400', bg: 'bg-sky-500/20', href: 'roadmap' },
+  { key: 'integrations', label: 'Integrations', icon: Blocks, color: 'text-sky-400', bg: 'bg-sky-500/20', href: 'integrations' },
   { key: 'links', label: 'Links', icon: LinkIcon, color: 'text-secondary', bg: 'bg-secondary/20', href: 'links' },
   { key: 'notes', label: 'Notes', icon: FileText, color: 'text-warning', bg: 'bg-warning/20', href: 'notes' },
   { key: 'credentials', label: 'Credentials', icon: Lock, color: 'text-purple-400', bg: 'bg-purple-500/20', href: 'credentials' },

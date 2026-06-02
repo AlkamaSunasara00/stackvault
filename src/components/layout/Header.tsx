@@ -70,6 +70,14 @@ export function Header({ onMenuClick }: HeaderProps) {
       </button>
 
       <div className="ml-auto flex items-center gap-2">
+        {user?.is_guest && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold select-none shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping shrink-0" />
+            <span className="hidden xs:inline">Guest View-Only</span>
+            <span className="xs:hidden">Guest</span>
+          </div>
+        )}
+
         {/* Mobile search icon */}
         <button
           onClick={openSearch}

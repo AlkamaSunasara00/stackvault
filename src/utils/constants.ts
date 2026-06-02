@@ -39,7 +39,7 @@ export const NAV_ITEMS = [
 
 export const PROJECT_TAB_ITEMS = [
   { href: 'overview', label: 'Overview', icon: 'LayoutGrid' },
-  { href: 'roadmap', label: 'Roadmap', icon: 'ListTodo' },
+  { href: 'integrations', label: 'Integrations', icon: 'Blocks' },
   { href: 'links', label: 'Links', icon: 'Link' },
   { href: 'env', label: 'Env Variables', icon: 'FileCode' },
   { href: 'notes', label: 'Notes', icon: 'FileText' },
