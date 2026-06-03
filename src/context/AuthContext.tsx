@@ -31,7 +31,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const NOTIFICATIONS_KEY = 'devvault_notifications'
+const NOTIFICATIONS_KEY = 'stackvault_notifications'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -211,11 +211,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setNotifications((prev) => [notification, ...prev].slice(0, 50))
       toast.success(n.message, {
         style: {
-          background: '#161E2E',
-          color: '#fff',
-          border: '1px solid rgba(255,255,255,0.08)',
+          background: '#FFFFFF',
+          color: '#1A1A1A',
+          border: '1px solid #EDEDEB',
+          boxShadow: '0 4px 12px rgba(15,15,15,0.08)',
+          fontSize: '14px',
         },
-        iconTheme: { primary: '#22C55E', secondary: '#161E2E' },
+        iconTheme: { primary: '#5C1BE6', secondary: '#FFFFFF' },
       })
     },
     []

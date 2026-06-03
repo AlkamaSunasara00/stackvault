@@ -56,7 +56,7 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
                   <Zap className="w-5 h-5 text-primary" />
                 </div>
-                <span className="text-white font-bold text-lg">DevVault</span>
+                <span className="text-slate-900 font-bold text-lg">StackVault</span>
               </div>
               <button
                 onClick={onClose}

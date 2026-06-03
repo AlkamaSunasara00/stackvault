@@ -3,8 +3,8 @@ import './globals.css'
 import { Providers } from './providers'
 
 export const metadata: Metadata = {
-  title: 'DevVault — Developer Project Vault',
-  description: 'A premium SaaS for developers to manage projects, store credentials, environment variables, commands, notes, and deployments — all in one encrypted vault.',
+  title: 'StackVault — Premium Project Workspace',
+  description: 'A premium Notion-style workspace for developers to manage projects, store credentials, environment variables, links, notes, and tasks.',
 }
 
 export default function RootLayout({

@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { Project, ProjectLink, ProjectNote, Environment, EnvironmentVariable, Credential, ProjectIntegration } from '@/types'
+import { Project, ProjectLink, ProjectNote, Environment, EnvironmentVariable, Credential, ProjectIntegration, Task } from '@/types'
 
 async function fetchProject(id: string) {
   const { data } = await axios.get<{ project: Project }>(`/api/projects/${id}`)
@@ -121,6 +121,24 @@ export function useProject(id: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
   })
 
+  // ---- Tasks ----
+  const createTask = useMutation({
+    mutationFn: (data: Partial<Task>) =>
+      axios.post('/api/tasks', { ...data, project_id: id }).then((r) => r.data.task),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
+  })
+
+  const updateTask = useMutation({
+    mutationFn: ({ taskId, data }: { taskId: string; data: Partial<Task> }) =>
+      axios.put(`/api/tasks/${taskId}`, data).then((r) => r.data.task),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
+  })
+
+  const deleteTask = useMutation({
+    mutationFn: (taskId: string) => axios.delete(`/api/tasks/${taskId}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
+  })
+
   return {
     project: query.data,
     isLoading: query.isLoading,
@@ -148,5 +166,9 @@ export function useProject(id: string) {
     createCredential: createCredential.mutateAsync,
     updateCredential: updateCredential.mutateAsync,
     deleteCredential: deleteCredential.mutateAsync,
+    // Tasks
+    createTask: createTask.mutateAsync,
+    updateTask: updateTask.mutateAsync,
+    deleteTask: deleteTask.mutateAsync,
   }
 }

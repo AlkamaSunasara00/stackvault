@@ -26,7 +26,8 @@ export async function GET(
           orderBy: { created_at: 'asc' },
         },
         credentials: { orderBy: { created_at: 'desc' } },
-        _count: { select: { links: true, notes: true, integrations: true, credentials: true } },
+        tasks: { orderBy: { created_at: 'desc' } },
+        _count: { select: { links: true, notes: true, integrations: true, credentials: true, tasks: true } },
       },
     })
 

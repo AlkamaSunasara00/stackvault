@@ -58,11 +58,13 @@ export interface Project {
   credentials?: Credential[]
   integrations?: ProjectIntegration[]
   favorites?: Favorite[]
+  tasks?: Task[]
   _count?: {
     links: number
     notes: number
     credentials: number
     integrations: number
+    tasks: number
   }
 }
 
@@ -177,3 +179,29 @@ export interface ApiResponse<T> {
   error?: string
   message?: string
 }
+
+export enum TaskStatus {
+  TODO = 'TODO',
+  IN_PROGRESS = 'IN_PROGRESS',
+  REVIEW = 'REVIEW',
+  DONE = 'DONE',
+}
+
+export enum TaskPriority {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+}
+
+export interface Task {
+  id: string
+  project_id: string
+  title: string
+  description?: string | null
+  status: TaskStatus
+  priority: TaskPriority
+  due_date?: string | null
+  created_at: string
+  updated_at: string
+}
+

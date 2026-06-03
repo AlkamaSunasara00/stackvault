@@ -5,6 +5,74 @@
 @tailwind utilities;
 
 /* ============================================================
+   Notion Dark Theme Design System Variables
+   ============================================================ */
+:root {
+  /* Backgrounds */
+  --notion-bg:              #191919;
+  --notion-bg-card:         #202020;
+  --notion-bg-sidebar:      #161616;
+  --notion-bg-hover:        #2a2a2a;
+  --notion-bg-active:       #303030;
+  --notion-bg-selection:    #253146;
+  --notion-bg-code:         #1a1a1a;
+  --notion-bg-tooltip:      #2f2f2f;
+  --notion-bg-dropdown:     #252525;
+
+  /* Borders */
+  --notion-border:          rgba(255, 255, 255, 0.08);
+  --notion-border-strong:   rgba(255, 255, 255, 0.14);
+
+  /* Text (alpha-based white family) */
+  --notion-text-1:          rgba(255, 255, 255, 0.87);
+  --notion-text-2:          rgba(255, 255, 255, 0.50);
+  --notion-text-3:          rgba(255, 255, 255, 0.28);
+  --notion-text-4:          rgba(255, 255, 255, 0.20);
+
+  /* Accent */
+  --notion-accent:          #5c7cfa;
+  --notion-accent-hover:    #4c6ef5;
+  --notion-accent-soft:     rgba(92, 124, 250, 0.12);
+
+  /* Color text (dark mode light variants) */
+  --notion-red:             #f87171;
+  --notion-pink:            #f472b6;
+  --notion-orange:          #fb923c;
+  --notion-yellow:          #fbbf24;
+  --notion-green:           #34d399;
+  --notion-blue:            #60a5fa;
+  --notion-purple:          #a78bfa;
+  --notion-brown:           #a8956a;
+  --notion-gray:            #9b9a97;
+
+  /* Color backgrounds (dark mode tints) */
+  --notion-red-bg:          #3b1111;
+  --notion-pink-bg:         #3b0f26;
+  --notion-orange-bg:       #3d2110;
+  --notion-yellow-bg:       #3b3000;
+  --notion-green-bg:        #0d2f2b;
+  --notion-blue-bg:         #0d2533;
+  --notion-purple-bg:       #251e3e;
+  --notion-brown-bg:        #2a1f1a;
+  --notion-gray-bg:         #252525;
+
+  /* Radius */
+  --notion-r-sm:            3px;
+  --notion-r-md:            5px;
+  --notion-r-lg:            8px;
+
+  /* Shadows */
+  --notion-shadow-sm:       0 1px 3px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,0,0,0.3);
+  --notion-shadow-md:       0 4px 12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+  --notion-shadow-lg:       0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.08);
+
+  /* Fonts */
+  --notion-sans:            ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --notion-mono:            "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  --notion-serif:           Lyon-Text, Georgia, YuMincho, serif;
+}
+
+/* ============================================================
    Base
    ============================================================ */
 * {
@@ -18,9 +86,9 @@ html {
 }
 
 body {
-  background-color: #0B0F19;
-  color: #ffffff;
-  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--notion-bg);
+  color: var(--notion-text-1);
+  font-family: var(--notion-sans);
   min-height: 100vh;
 }
 
@@ -37,20 +105,20 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(34, 197, 94, 0.3);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(34, 197, 94, 0.5);
+  background: rgba(255, 255, 255, 0.22);
 }
 
 /* ============================================================
    Selection
    ============================================================ */
 ::selection {
-  background: rgba(34, 197, 94, 0.2);
-  color: #ffffff;
+  background: var(--notion-bg-selection);
+  color: var(--notion-text-1);
 }
 
 /* ============================================================
@@ -58,37 +126,37 @@ body {
    ============================================================ */
 @layer components {
   .glass {
-    background: rgba(22, 30, 46, 0.8);
+    background: var(--notion-bg-sidebar);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--notion-border);
   }
 
   .glass-card {
-    background: #161E2E;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 0.75rem;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    transition: border-color 0.2s ease, background-color 0.2s ease;
+    background: var(--notion-bg-card);
+    border: 1px solid var(--notion-border);
+    border-radius: var(--notion-r-lg); /* 8px */
+    box-shadow: var(--notion-shadow-sm);
+    transition: border-color 80ms ease, background-color 80ms ease, box-shadow 80ms ease;
   }
 
   .glass-card:hover {
-    border-color: rgba(255, 255, 255, 0.15);
-    background: #1a2235;
+    border-color: var(--notion-border-strong);
+    background: var(--notion-bg-hover);
+    box-shadow: var(--notion-shadow-md);
   }
 
   .mono {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-family: var(--notion-mono);
   }
 
   .gradient-mesh {
-    background: radial-gradient(ellipse 80% 80% at 50% -20%, rgba(34, 197, 94, 0.12), transparent),
-      radial-gradient(ellipse 60% 60% at 90% 100%, rgba(59, 130, 246, 0.08), transparent);
+    background: radial-gradient(ellipse 80% 80% at 50% -20%, rgba(92, 124, 250, 0.05), transparent),
+      radial-gradient(ellipse 60% 60% at 90% 100%, rgba(52, 211, 153, 0.02), transparent);
   }
 
   .text-gradient {
-    background: linear-gradient(135deg, #22C55E, #3B82F6);
+    background: linear-gradient(135deg, var(--notion-accent), var(--notion-green));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -97,9 +165,9 @@ body {
   .shimmer {
     background: linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.02) 0%,
-      rgba(255, 255, 255, 0.06) 50%,
-      rgba(255, 255, 255, 0.02) 100%
+      rgba(255, 255, 255, 0.01) 0%,
+      rgba(255, 255, 255, 0.03) 50%,
+      rgba(255, 255, 255, 0.01) 100%
     );
     background-size: 1000px 100%;
     animation: shimmer 2s linear infinite;
@@ -109,56 +177,62 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: var(--notion-r-md); /* 5px */
+    font-size: 14px;
     font-weight: 500;
-    color: #94A3B8;
-    transition: all 0.15s ease;
+    color: var(--notion-text-2);
+    transition: all 80ms ease;
     border-left: 2px solid transparent;
     text-decoration: none;
   }
 
   .sidebar-link:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--notion-text-1);
+    background: rgba(255, 255, 255, 0.04);
   }
 
   .sidebar-link.active {
-    color: #22C55E;
-    background: rgba(34, 197, 94, 0.1);
-    border-left-color: #22C55E;
+    color: var(--notion-text-1);
+    background: var(--notion-bg-active);
+    border-left-color: var(--notion-accent);
+    font-weight: 600;
   }
 
   .input-dark {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 0.5rem;
-    color: #ffffff;
-    padding: 0.625rem 0.875rem;
-    font-size: 0.875rem;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background: var(--notion-bg-card);
+    border: 1px solid var(--notion-border);
+    border-radius: var(--notion-r-md); /* 5px */
+    color: var(--notion-text-1);
+    padding: 6px 10px;
+    font-size: 14px;
+    transition: border-color 100ms ease, box-shadow 100ms ease;
     width: 100%;
     outline: none;
+    font-family: inherit;
   }
 
   .input-dark::placeholder {
-    color: #94A3B8;
+    color: var(--notion-text-4);
+  }
+
+  .input-dark:hover {
+    border-color: var(--notion-border-strong);
   }
 
   .input-dark:focus {
-    border-color: rgba(34, 197, 94, 0.5);
-    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    border-color: var(--notion-accent);
+    box-shadow: 0 0 0 2px rgba(92, 124, 250, 0.25);
   }
 
   .btn-primary {
-    background: #22C55E;
-    color: #000000;
-    font-weight: 600;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    transition: background-color 0.15s ease, transform 0.1s ease;
+    background: var(--notion-accent);
+    color: #FFFFFF;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: var(--notion-r-md); /* 5px */
+    font-size: 14px;
+    transition: background-color 100ms ease, transform 80ms ease;
     border: none;
     cursor: pointer;
     display: inline-flex;
@@ -167,22 +241,22 @@ body {
   }
 
   .btn-primary:hover {
-    background: rgba(34, 197, 94, 0.9);
+    background: var(--notion-accent-hover);
   }
 
   .btn-primary:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
   }
 
   .btn-secondary {
-    background: rgba(59, 130, 246, 0.2);
-    color: #3B82F6;
-    border: 1px solid rgba(59, 130, 246, 0.3);
+    background: var(--notion-bg-active);
+    color: var(--notion-text-1);
+    border: 1px solid var(--notion-border);
     font-weight: 500;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    transition: all 0.15s ease;
+    padding: 5px 12px;
+    border-radius: var(--notion-r-md); /* 5px */
+    font-size: 14px;
+    transition: all 100ms ease;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -190,16 +264,17 @@ body {
   }
 
   .btn-secondary:hover {
-    background: rgba(59, 130, 246, 0.3);
+    background: var(--notion-bg-hover);
+    border-color: var(--notion-border-strong);
   }
 
   .btn-ghost {
     background: transparent;
-    color: #94A3B8;
-    padding: 0.5rem 0.875rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    transition: all 0.15s ease;
+    color: var(--notion-text-2);
+    padding: 5px 12px;
+    border-radius: var(--notion-r-md); /* 5px */
+    font-size: 14px;
+    transition: all 80ms ease;
     border: none;
     cursor: pointer;
     display: inline-flex;
@@ -208,19 +283,19 @@ body {
   }
 
   .btn-ghost:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--notion-text-1);
+    background: rgba(255, 255, 255, 0.04);
   }
 
   .btn-danger {
-    background: rgba(239, 68, 68, 0.15);
-    color: #EF4444;
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: var(--notion-red-bg);
+    color: var(--notion-red);
+    border: 1px solid rgba(248, 113, 113, 0.2);
     font-weight: 500;
-    padding: 0.5rem 0.875rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    transition: all 0.15s ease;
+    padding: 5px 12px;
+    border-radius: var(--notion-r-md);
+    font-size: 14px;
+    transition: all 100ms ease;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -228,8 +303,16 @@ body {
   }
 
   .btn-danger:hover {
-    background: rgba(239, 68, 68, 0.25);
+    background: rgba(248, 113, 113, 0.15);
   }
+  
+  /* Pastel backgrounds for Notion badges in dark mode */
+  .badge-tint-peach { background-color: var(--notion-orange-bg); color: var(--notion-orange); border: 1px solid rgba(251, 146, 60, 0.15); }
+  .badge-tint-rose { background-color: var(--notion-pink-bg); color: var(--notion-pink); border: 1px solid rgba(244, 114, 182, 0.15); }
+  .badge-tint-mint { background-color: var(--notion-green-bg); color: var(--notion-green); border: 1px solid rgba(52, 211, 153, 0.15); }
+  .badge-tint-lavender { background-color: var(--notion-purple-bg); color: var(--notion-purple); border: 1px solid rgba(167, 139, 250, 0.15); }
+  .badge-tint-sky { background-color: var(--notion-blue-bg); color: var(--notion-blue); border: 1px solid rgba(96, 165, 250, 0.15); }
+  .badge-tint-yellow { background-color: var(--notion-yellow-bg); color: var(--notion-yellow); border: 1px solid rgba(251, 191, 36, 0.15); }
 }
 
 /* ============================================================
@@ -251,24 +334,34 @@ body {
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(92, 124, 250, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(92, 124, 250, 0); }
 }
 
-.animate-fade-in { animation: fadeIn 0.3s ease-out; }
-.animate-slide-in-left { animation: slideInLeft 0.3s ease-out; }
+.animate-fade-in { animation: fadeIn 0.15s ease-out; }
+.animate-slide-in-left { animation: slideInLeft 0.15s ease-out; }
 .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 
 /* ============================================================
-   Code blocks
+   Code formatting (Notion Style)
    ============================================================ */
 pre, code {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--notion-mono);
+}
+
+code:not(pre code) {
+  font-family: var(--notion-mono);
+  font-size: 85%;
+  background: var(--notion-bg-hover);
+  color: var(--notion-red);
+  border: 1px solid var(--notion-border);
+  border-radius: 3px;
+  padding: 1px 5px;
 }
 
 /* ============================================================
    React Hot Toast override
    ============================================================ */
 .react-hot-toast > div {
-  font-family: 'Inter', sans-serif !important;
+  font-family: var(--notion-sans) !important;
 }

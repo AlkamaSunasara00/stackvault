@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -8,6 +8,7 @@ import {
   LayoutDashboard, FolderKanban, Star, Settings, LogOut, Zap, ChevronRight,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { useSidebar } from '@/context/SidebarContext'
 import { Avatar } from '@/components/ui/Avatar'
 import { clsx } from 'clsx'
 
@@ -31,7 +32,7 @@ const itemVariants = {
 export function Sidebar() {
   const pathname = usePathname()
   const { user, supabaseUser, signOut } = useAuth()
-  const [collapsed, setCollapsed] = useState(false)
+  const { collapsed, toggleCollapsed } = useSidebar()
 
   const displayName = user?.name || supabaseUser?.user_metadata?.name || 'User'
   const displayEmail = user?.email || supabaseUser?.email || ''
@@ -44,30 +45,30 @@ export function Sidebar() {
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className={clsx(
         'fixed left-0 top-0 bottom-0 z-30 flex flex-col',
-        'bg-sidebar border-r border-white/[0.06]',
+        'bg-sidebar border-r border-[#EDEDEB]',
         'transition-all duration-300',
         collapsed ? 'w-16' : 'w-60',
         'hidden lg:flex'
       )}
     >
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-4 py-5 border-b border-white/[0.06]">
-        <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-2.5 px-4 py-5 border-b border-border">
+        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
           <Zap className="w-5 h-5 text-primary" />
         </div>
         {!collapsed && (
           <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-white font-bold text-lg tracking-tight"
+            className="text-white/90 font-bold text-lg tracking-tight"
           >
-            DevVault
+            StackVault
           </motion.span>
         )}
         <button
-          onClick={() => setCollapsed((v) => !v)}
+          onClick={toggleCollapsed}
           className={clsx(
-            'ml-auto text-muted hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5',
+            'ml-auto text-muted hover:text-white/90 transition-colors p-1 rounded-lg hover:bg-white/[0.04]',
             collapsed && 'mx-auto'
           )}
         >
@@ -100,8 +101,8 @@ export function Sidebar() {
                   'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150',
                   'border-l-2',
                   isActive
-                    ? 'bg-primary/10 text-primary border-primary'
-                    : 'text-muted hover:text-white hover:bg-white/5 border-transparent',
+                    ? 'bg-primary/10 text-primary border-primary font-semibold'
+                    : 'text-white/50 hover:text-white/90 hover:bg-white/[0.04] border-transparent',
                   collapsed && 'justify-center px-2'
                 )}
               >
@@ -114,12 +115,12 @@ export function Sidebar() {
       </motion.nav>
 
       {/* User section */}
-      <div className="p-3 border-t border-white/[0.06]">
+      <div className="p-3 border-t border-border">
         {!collapsed ? (
           <div className="flex items-center gap-2.5 p-2 rounded-lg">
             <Avatar src={avatarUrl} name={displayName} size="sm" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{displayName}</p>
+              <p className="text-sm font-medium text-white/90 truncate">{displayName}</p>
               <p className="text-xs text-muted truncate">{displayEmail}</p>
             </div>
             <button

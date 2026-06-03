@@ -5,6 +5,8 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
 import { MobileDrawer } from '@/components/layout/MobileDrawer'
 import { ProjectTabs } from '@/components/layout/ProjectTabs'
+import { useSidebar } from '@/context/SidebarContext'
+import { clsx } from 'clsx'
 
 export default function ProjectLayout({
   children,
@@ -12,6 +14,7 @@ export default function ProjectLayout({
   children: React.ReactNode
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const { collapsed } = useSidebar()
 
   return (
     <div className="min-h-screen bg-background">
@@ -19,9 +22,12 @@ export default function ProjectLayout({
       <MobileDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <Header onMenuClick={() => setDrawerOpen(true)} />
 
-      <div className="lg:ml-60 pt-16 transition-all duration-300">
+      <div className={clsx(
+        "pt-16 transition-all duration-300",
+        collapsed ? "lg:ml-16" : "lg:ml-60"
+      )}>
         {/* Tab bar */}
-        <div className="border-b border-white/[0.06] bg-background/80 backdrop-blur-sm sticky top-16 z-10">
+        <div className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-16 z-10">
           <ProjectTabs />
         </div>
 

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Bell, ChevronDown, Settings, LogOut, Menu } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useSearch } from '@/context/SearchContext'
+import { useSidebar } from '@/context/SidebarContext'
 import { Avatar } from '@/components/ui/Avatar'
 import { formatRelative } from '@/utils/formatDate'
 import { clsx } from 'clsx'
@@ -26,12 +27,13 @@ export function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname()
   const { user, supabaseUser, notifications, unreadCount, markAllRead, signOut } = useAuth()
   const { openSearch } = useSearch()
+  const { collapsed } = useSidebar()
   const [notifOpen, setNotifOpen] = useState(false)
   const [avatarOpen, setAvatarOpen] = useState(false)
   const notifRef = useRef<HTMLDivElement>(null)
   const avatarRef = useRef<HTMLDivElement>(null)
 
-  const pageTitle = routeTitles[pathname] || 'DevVault'
+  const pageTitle = routeTitles[pathname] || 'StackVault'
   const displayName = user?.name || supabaseUser?.user_metadata?.name || 'User'
   const avatarUrl = user?.avatar_url || supabaseUser?.user_metadata?.avatar_url
 
@@ -45,34 +47,37 @@ export function Header({ onMenuClick }: HeaderProps) {
   }, [])
 
   return (
-    <header className="fixed top-0 right-0 left-0 lg:left-60 z-20 h-16 flex items-center px-4 lg:px-6 gap-4 border-b border-white/[0.06] bg-background/80 backdrop-blur-sm transition-all duration-300">
+    <header className={clsx(
+      "fixed top-0 right-0 z-20 h-16 flex items-center px-4 lg:px-6 gap-4 border-b border-border bg-background/80 backdrop-blur-sm transition-all duration-300",
+      collapsed ? "left-0 lg:left-16" : "left-0 lg:left-60"
+    )}>
       {/* Mobile menu */}
       <button
         onClick={onMenuClick}
-        className="lg:hidden text-muted hover:text-white transition-colors p-1"
+        className="lg:hidden text-muted hover:text-white/90 transition-colors p-1"
       >
         <Menu className="w-5 h-5" />
       </button>
 
       {/* Page title */}
-      <h1 className="text-white font-semibold text-lg hidden sm:block">{pageTitle}</h1>
+      <h1 className="text-white/90 font-semibold text-lg hidden sm:block">{pageTitle}</h1>
 
       {/* Search */}
       <button
         onClick={openSearch}
-        className="hidden sm:flex flex-1 max-w-xs items-center gap-2.5 px-3 py-2 rounded-full bg-white/5 border border-white/[0.08] text-muted hover:text-white hover:border-white/[0.15] transition-all duration-150 text-sm group"
+        className="hidden sm:flex flex-1 max-w-xs items-center gap-2.5 px-3 py-2 rounded-lg bg-white/[0.03] border border-border text-white/40 hover:text-white/80 hover:bg-white/[0.05] transition-all duration-150 text-sm group"
       >
         <Search className="w-4 h-4" />
-        <span className="flex-1 text-left">Search anything...</span>
-        <kbd className="text-xs bg-white/5 border border-white/[0.08] rounded px-1.5 py-0.5 font-mono group-hover:border-white/[0.15]">
+        <span className="flex-1 text-left">Search workspace...</span>
+        <kbd className="text-xs bg-white/[0.04] border border-white/10 rounded px-1.5 py-0.5 font-mono group-hover:border-white/20">
           Ctrl+K
         </kbd>
       </button>
 
       <div className="ml-auto flex items-center gap-2">
         {user?.is_guest && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold select-none shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping shrink-0" />
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 text-xs font-semibold select-none shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping shrink-0" />
             <span className="hidden xs:inline">Guest View-Only</span>
             <span className="xs:hidden">Guest</span>
           </div>
@@ -81,7 +86,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Mobile search icon */}
         <button
           onClick={openSearch}
-          className="sm:hidden text-muted hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/5"
+          className="sm:hidden text-muted hover:text-white/90 transition-colors p-1.5 rounded-lg hover:bg-white/[0.04]"
         >
           <Search className="w-5 h-5" />
         </button>
@@ -90,7 +95,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         <div ref={notifRef} className="relative">
           <button
             onClick={() => { setNotifOpen((v) => !v); if (!notifOpen) markAllRead() }}
-            className="relative p-2 rounded-lg text-muted hover:text-white hover:bg-white/5 transition-colors"
+            className="relative p-2 rounded-lg text-muted hover:text-white/90 hover:bg-white/[0.04] transition-colors"
           >
             <Bell className="w-5 h-5" />
             <AnimatePresence>
@@ -99,7 +104,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   exit={{ scale: 0 }}
-                  className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-black"
+                  className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-white"
                 >
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </motion.span>
@@ -114,24 +119,24 @@ export function Header({ onMenuClick }: HeaderProps) {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -4 }}
                 transition={{ duration: 0.15 }}
-                className="absolute right-0 mt-1 w-80 bg-[#1a2235] border border-white/[0.08] rounded-xl shadow-modal py-2 max-h-96 overflow-y-auto"
+                className="absolute right-0 mt-1 w-80 bg-[#252525] border border-border rounded-lg shadow-md py-2 max-h-96 overflow-y-auto z-50"
               >
-                <p className="px-4 py-2 text-xs font-semibold text-muted uppercase tracking-wider border-b border-white/[0.06] mb-1">
+                <p className="px-4 py-2 text-xs font-semibold text-white/50 uppercase tracking-wider border-b border-border mb-1">
                   Notifications
                 </p>
                 {notifications.length === 0 ? (
-                  <p className="px-4 py-6 text-sm text-muted text-center">No notifications</p>
+                  <p className="px-4 py-6 text-sm text-white/30 text-center">No notifications</p>
                 ) : (
                   notifications.slice(0, 20).map((n) => (
                     <div
                       key={n.id}
                       className={clsx(
-                        'px-4 py-2.5 hover:bg-white/[0.03] transition-colors',
+                        'px-4 py-2.5 hover:bg-white/[0.02] transition-colors border-b border-border/50 last:border-b-0',
                         !n.read && 'bg-primary/[0.03]'
                       )}
                     >
-                      <p className="text-sm text-white/90">{n.message}</p>
-                      <p className="text-xs text-muted mt-0.5">{formatRelative(n.createdAt)}</p>
+                      <p className="text-sm text-white/90 font-medium">{n.message}</p>
+                      <p className="text-xs text-white/40 mt-0.5">{formatRelative(n.createdAt)}</p>
                     </div>
                   ))
                 )}
@@ -144,7 +149,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         <div ref={avatarRef} className="relative">
           <button
             onClick={() => setAvatarOpen((v) => !v)}
-            className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+            className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-white/[0.04] transition-colors"
           >
             <Avatar src={avatarUrl} name={displayName} size="sm" />
             <ChevronDown className={clsx('w-3.5 h-3.5 text-muted transition-transform', avatarOpen && 'rotate-180')} />
@@ -157,23 +162,23 @@ export function Header({ onMenuClick }: HeaderProps) {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -4 }}
                 transition={{ duration: 0.15 }}
-                className="absolute right-0 mt-1 w-52 bg-[#1a2235] border border-white/[0.08] rounded-xl shadow-modal py-2"
+                className="absolute right-0 mt-1 w-52 bg-[#252525] border border-border rounded-lg shadow-md py-2 z-50"
               >
-                <div className="px-4 py-2.5 border-b border-white/[0.06] mb-1">
-                  <p className="text-sm font-medium text-white">{displayName}</p>
-                  <p className="text-xs text-muted">{user?.email}</p>
+                <div className="px-4 py-2.5 border-b border-border mb-1">
+                  <p className="text-sm font-medium text-white/90">{displayName}</p>
+                  <p className="text-xs text-white/40 truncate">{user?.email || supabaseUser?.email}</p>
                 </div>
                 <Link
                   href="/settings"
                   onClick={() => setAvatarOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2 text-sm text-white/80 hover:bg-white/5 hover:text-white transition-colors"
+                  className="flex items-center gap-2.5 px-4 py-2 text-sm text-white/70 hover:bg-white/[0.04] hover:text-white/90 transition-colors"
                 >
                   <Settings className="w-4 h-4" />
                   Settings
                 </Link>
                 <button
                   onClick={() => { setAvatarOpen(false); signOut() }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-danger hover:bg-danger/10 transition-colors"
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-danger hover:bg-[#3b1111] transition-colors text-left"
                 >
                   <LogOut className="w-4 h-4" />
                   Sign out
