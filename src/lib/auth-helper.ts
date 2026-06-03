@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { cookies } from 'next/headers'
 import prisma from '@/lib/prisma'
+import { cache } from 'react'
 
 export interface AuthUser {
   id: string
@@ -10,11 +11,12 @@ export interface AuthUser {
   is_guest?: boolean
 }
 
-export async function getAuthUser(): Promise<AuthUser | null> {
+export const getAuthUser = cache(async (): Promise<AuthUser | null> => {
   // 1. Check Supabase session first
   try {
     const supabase = await createSupabaseServerClient()
-    const { data: { user: supaUser } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+    const supaUser = session?.user
     if (supaUser) {
       // Find user in local DB
       const user = await prisma.user.findUnique({
@@ -58,4 +60,4 @@ export async function getAuthUser(): Promise<AuthUser | null> {
   }
 
   return null
-}
+})

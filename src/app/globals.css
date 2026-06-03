@@ -365,3 +365,109 @@ code:not(pre code) {
 .react-hot-toast > div {
   font-family: var(--notion-sans) !important;
 }
+
+/* ============================================================
+   TipTap Editor Styles (Notion Dark Mode)
+   ============================================================ */
+.ProseMirror {
+  outline: none;
+  min-height: 300px;
+  color: var(--notion-text-1);
+  font-family: var(--notion-sans);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ProseMirror p {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror h1 {
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.ProseMirror h2 {
+  font-size: 1.5rem; /* text-2xl */
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.ProseMirror h3 {
+  font-size: 1.25rem; /* text-xl */
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror li {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.ProseMirror blockquote {
+  border-left: 3px solid var(--notion-border-strong);
+  padding-left: 1rem;
+  color: var(--notion-text-2);
+  font-style: italic;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ProseMirror pre {
+  background: var(--notion-bg-code);
+  border: 1px solid var(--notion-border);
+  border-radius: var(--notion-r-md);
+  padding: 0.75rem 1rem;
+  font-family: var(--notion-mono);
+  font-size: 13px;
+  overflow-x: auto;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  color: #A9B1D6;
+}
+
+.ProseMirror pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* Placeholder styling */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--notion-text-4);
+  pointer-events: none;
+  height: 0;
+}
+
+/* Fix list item bullet layout inside TipTap editor */
+.ProseMirror ul li p, .ProseMirror ol li p {
+  display: inline;
+  margin: 0;
+}
+

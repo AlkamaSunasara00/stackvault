@@ -1,20 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { logActivity } from '@/lib/activity'
-
-async function getUser() {
-  const supabase = await createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
-}
+import { getAuthUser } from '@/lib/auth-helper'
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const supaUser = await getUser()
+  const supaUser = await getAuthUser()
   if (!supaUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const existing = await prisma.task.findFirst({ where: { id }, include: { project: true } })
@@ -41,7 +35,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const supaUser = await getUser()
+  const supaUser = await getAuthUser()
   if (!supaUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const task = await prisma.task.findFirst({ where: { id }, include: { project: true } })

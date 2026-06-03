@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
-
-async function getUser() {
-  const supabase = await createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
-}
+import { getAuthUser } from '@/lib/auth-helper'
 
 export async function GET(request: NextRequest) {
   try {
-    const supaUser = await getUser()
+    const supaUser = await getAuthUser()
     if (!supaUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { searchParams } = request.nextUrl

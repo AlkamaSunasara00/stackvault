@@ -15,6 +15,13 @@ import ReactMarkdown from 'react-markdown'
 import toast from 'react-hot-toast'
 import { clsx } from 'clsx'
 
+// TipTap Rich Editor Imports
+import { useEditor, EditorContent } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import Placeholder from '@tiptap/extension-placeholder'
+import { marked } from 'marked'
+import TurndownService from 'turndown'
+
 interface NotesEditorProps {
   projectId: string
 }
@@ -36,7 +43,7 @@ const getTagColorClass = (tag: string) => {
   return pastelColors[Math.abs(hash) % pastelColors.length]
 }
 
-// Custom Premium CodeBlock
+// Custom Premium CodeBlock for Markdown Preview
 function CodeBlock({ language, value }: { language: string; value: string }) {
   const [copied, setCopied] = useState(false)
 
@@ -48,7 +55,7 @@ function CodeBlock({ language, value }: { language: string; value: string }) {
   }
 
   return (
-    <div className="my-4 rounded-lg overflow-hidden border border-[#EDEDEB] bg-[#0B0F19] text-white font-mono text-sm shadow-md">
+    <div className="my-4 rounded-lg overflow-hidden border border-[#EDEDEB]/10 bg-[#0B0F19] text-white font-mono text-sm shadow-md">
       {/* Header bar */}
       <div className="flex items-center justify-between px-4 py-1.5 bg-[#161E2E] border-b border-[#EDEDEB]/10 text-xs text-slate-400 select-none">
         <span className="font-semibold uppercase tracking-wider">{language || 'code'}</span>
@@ -92,6 +99,34 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
     is_pinned: false,
   })
 
+  // Initialize TipTap Rich Editor
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Placeholder.configure({
+        placeholder: 'Write your note here... Use standard markdown shortcuts or formatting bar.',
+      }),
+    ],
+    content: '',
+    editorProps: {
+      attributes: {
+        class: 'prose prose-invert prose-sm max-w-none focus:outline-none min-h-[300px] text-white/90 font-sans leading-relaxed',
+      },
+    },
+  })
+
+  // Sync editor content when selected note changes
+  useEffect(() => {
+    if (editor && selectedNote) {
+      const htmlContent = marked.parse(selectedNote.content || '') as string
+      if (editor.getHTML() !== htmlContent) {
+        editor.commands.setContent(htmlContent)
+      }
+    } else if (editor && !selectedNote && isCreating) {
+      editor.commands.setContent('')
+    }
+  }, [editor, selectedNote?.id, isCreating])
+
   const notes = project?.notes ?? []
   const pinned = notes.filter((n) => n.is_pinned)
   const unpinned = notes.filter((n) => !n.is_pinned)
@@ -101,6 +136,10 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
     setForm({ title: note.title, content: note.content, tags: note.tags, is_pinned: note.is_pinned })
     setEditorLayout('edit')
     setSaved(false)
+    if (editor) {
+      const htmlContent = marked.parse(note.content || '') as string
+      editor.commands.setContent(htmlContent)
+    }
   }
 
   const openNew = () => {
@@ -108,32 +147,63 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
     setIsCreating(true)
     setForm({ title: '', content: '', tags: [], is_pinned: false })
     setEditorLayout('edit')
+    if (editor) {
+      editor.commands.setContent('')
+    }
   }
 
   const handleSave = useCallback(async () => {
-    if (!form.title.trim()) { toast.error('Title is required'); return }
+    if (!form.title.trim()) {
+      toast.error('Title is required')
+      return
+    }
+
+    // Convert TipTap HTML structure to markdown only on save to preserve performance
+    let markdownContent = form.content
+    if (editor) {
+      const htmlContent = editor.getHTML()
+      const turndownService = new TurndownService({
+        headingStyle: 'atx',
+        codeBlockStyle: 'fenced',
+      })
+      markdownContent = turndownService.turndown(htmlContent)
+    }
+
+    const updatedForm = {
+      ...form,
+      content: markdownContent,
+    }
+
     try {
       if (isCreating) {
-        const note = await createNote({ ...form })
+        const note = await createNote(updatedForm)
         setSelectedNote(note as ProjectNote)
         setIsCreating(false)
       } else if (selectedNote) {
-        await updateNote({ noteId: selectedNote.id, data: form })
+        await updateNote({ noteId: selectedNote.id, data: updatedForm })
       }
+      setForm((prev) => ({ ...prev, content: markdownContent }))
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
       toast.success(isCreating ? 'Note created!' : 'Note saved!')
-    } catch { toast.error('Failed to save note') }
-  }, [form, isCreating, createNote, updateNote, selectedNote])
+    } catch {
+      toast.error('Failed to save note')
+    }
+  }, [form, isCreating, createNote, updateNote, selectedNote, editor])
 
   const handleDelete = async () => {
     if (!deleteTarget) return
     try {
       await deleteNote(deleteTarget.id)
       toast.success('Note deleted')
-      if (selectedNote?.id === deleteTarget.id) { setSelectedNote(null); setIsCreating(false) }
+      if (selectedNote?.id === deleteTarget.id) {
+        setSelectedNote(null)
+        setIsCreating(false)
+      }
       setDeleteTarget(null)
-    } catch { toast.error('Failed to delete note') }
+    } catch {
+      toast.error('Failed to delete note')
+    }
   }
 
   const addTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -148,28 +218,17 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
   const removeTag = (tag: string) =>
     setForm((prev) => ({ ...prev, tags: prev.tags.filter((t) => t !== tag) }))
 
-  const insertFormat = (before: string, after: string = '') => {
-    const textarea = document.getElementById('notes-textarea') as HTMLTextAreaElement
-    if (!textarea) return
-
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const text = textarea.value
-
-    const selected = text.substring(start, end)
-    const replacement = before + (selected || '') + after
-
-    const newContent = text.substring(0, start) + replacement + text.substring(end)
-    setForm((prev) => ({ ...prev, content: newContent }))
-
-    // Refocus and place cursor
-    setTimeout(() => {
-      textarea.focus()
-      textarea.setSelectionRange(
-        start + before.length,
-        start + before.length + (selected || '').length
-      )
-    }, 0)
+  const handleLayoutChange = (layout: 'edit' | 'preview' | 'split') => {
+    setEditorLayout(layout)
+    if ((layout === 'preview' || layout === 'split') && editor) {
+      const htmlContent = editor.getHTML()
+      const turndownService = new TurndownService({
+        headingStyle: 'atx',
+        codeBlockStyle: 'fenced',
+      })
+      const markdownContent = turndownService.turndown(htmlContent)
+      setForm((prev) => ({ ...prev, content: markdownContent }))
+    }
   }
 
   const isEditing = isCreating || !!selectedNote
@@ -215,7 +274,14 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
                   <Pin className="w-3.5 h-3.5 text-warning" /> Pinned
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {pinned.map((note) => <NoteCard key={note.id} note={note} onClick={() => openNote(note)} onDelete={() => setDeleteTarget(note)} />)}
+                  {pinned.map((note) => (
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      onClick={() => openNote(note)}
+                      onDelete={() => setDeleteTarget(note)}
+                    />
+                  ))}
                 </div>
               </div>
             )}
@@ -223,7 +289,14 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
               <div>
                 {pinned.length > 0 && <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">All Notes</p>}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {unpinned.map((note) => <NoteCard key={note.id} note={note} onClick={() => openNote(note)} onDelete={() => setDeleteTarget(note)} />)}
+                  {unpinned.map((note) => (
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      onClick={() => openNote(note)}
+                      onDelete={() => setDeleteTarget(note)}
+                    />
+                  ))}
                 </div>
               </div>
             )}
@@ -238,13 +311,22 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
         >
           {/* Editor Header controls */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4 mb-4">
-            <button onClick={() => { setSelectedNote(null); setIsCreating(false) }} className="text-muted hover:text-white transition-colors flex items-center gap-1.5 text-sm font-medium">
+            <button
+              onClick={() => {
+                setSelectedNote(null)
+                setIsCreating(false)
+              }}
+              className="text-muted hover:text-white transition-colors flex items-center gap-1.5 text-sm font-medium"
+            >
               <X className="w-4 h-4" /> Back to notes
             </button>
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setForm((prev) => ({ ...prev, is_pinned: !prev.is_pinned }))}
-                className={clsx('p-1.5 rounded-lg transition-colors', form.is_pinned ? 'text-warning bg-warning/10' : 'text-muted hover:text-white hover:bg-white/5')}
+                className={clsx(
+                  'p-1.5 rounded-lg transition-colors',
+                  form.is_pinned ? 'text-warning bg-warning/10' : 'text-muted hover:text-white hover:bg-white/5'
+                )}
                 title={form.is_pinned ? 'Unpin note' : 'Pin note'}
               >
                 <Pin className="w-4 h-4" />
@@ -253,24 +335,39 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
               {/* Layout togglers */}
               <div className="flex items-center bg-white/5 border border-border rounded-lg p-0.5">
                 <button
-                  onClick={() => setEditorLayout('edit')}
-                  className={clsx('px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1', editorLayout === 'edit' ? 'bg-[var(--notion-bg-active)] text-white shadow-sm border border-border' : 'text-muted hover:text-white')}
+                  onClick={() => handleLayoutChange('edit')}
+                  className={clsx(
+                    'px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1',
+                    editorLayout === 'edit'
+                      ? 'bg-[var(--notion-bg-active)] text-white shadow-sm border border-border'
+                      : 'text-muted hover:text-white'
+                  )}
                   title="Write Mode"
                 >
                   <Pencil className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Edit</span>
                 </button>
                 <button
-                  onClick={() => setEditorLayout('preview')}
-                  className={clsx('px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1', editorLayout === 'preview' ? 'bg-[var(--notion-bg-active)] text-white shadow-sm border border-border' : 'text-muted hover:text-white')}
+                  onClick={() => handleLayoutChange('preview')}
+                  className={clsx(
+                    'px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1',
+                    editorLayout === 'preview'
+                      ? 'bg-[var(--notion-bg-active)] text-white shadow-sm border border-border'
+                      : 'text-muted hover:text-white'
+                  )}
                   title="Preview Mode"
                 >
                   <Eye className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Preview</span>
                 </button>
                 <button
-                  onClick={() => setEditorLayout('split')}
-                  className={clsx('hidden md:flex px-2.5 py-1 text-xs font-medium rounded-md transition-colors items-center gap-1', editorLayout === 'split' ? 'bg-[var(--notion-bg-active)] text-white shadow-sm border border-border' : 'text-muted hover:text-white')}
+                  onClick={() => handleLayoutChange('split')}
+                  className={clsx(
+                    'hidden md:flex px-2.5 py-1 text-xs font-medium rounded-md transition-colors items-center gap-1',
+                    editorLayout === 'split'
+                      ? 'bg-[var(--notion-bg-active)] text-white shadow-sm border border-border'
+                      : 'text-muted hover:text-white'
+                  )}
                   title="Split Screen Layout"
                 >
                   <Columns className="w-3.5 h-3.5" />
@@ -279,11 +376,18 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
               </div>
 
               {selectedNote && (
-                <button onClick={() => setDeleteTarget(selectedNote)} className="p-1.5 rounded-lg text-muted hover:text-danger hover:bg-danger/10 transition-colors">
+                <button
+                  onClick={() => setDeleteTarget(selectedNote)}
+                  className="p-1.5 rounded-lg text-muted hover:text-danger hover:bg-danger/10 transition-colors"
+                >
                   <Trash2 className="w-4 h-4" />
                 </button>
               )}
-              <Button size="sm" onClick={handleSave} iconLeft={saved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}>
+              <Button
+                size="sm"
+                onClick={handleSave}
+                iconLeft={saved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
+              >
                 {saved ? 'Saved!' : 'Save'}
               </Button>
             </div>
@@ -298,20 +402,112 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
           />
 
           {/* Formatting Toolbar */}
-          {editorLayout !== 'preview' && (
+          {editorLayout !== 'preview' && editor && (
             <div className="flex flex-wrap items-center gap-1 bg-white/[0.02] border border-border rounded-lg p-1 mb-3">
-              <button type="button" onClick={() => insertFormat('**', '**')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5" title="Bold"><Bold className="w-4 h-4" /></button>
-              <button type="button" onClick={() => insertFormat('*', '*')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5" title="Italic"><Italic className="w-4 h-4" /></button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleBold().run()}
+                className={clsx(
+                  'p-1.5 rounded transition-colors',
+                  editor.isActive('bold') ? 'text-primary bg-primary/10' : 'text-muted hover:text-white hover:bg-white/5'
+                )}
+                title="Bold"
+              >
+                <Bold className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleItalic().run()}
+                className={clsx(
+                  'p-1.5 rounded transition-colors',
+                  editor.isActive('italic') ? 'text-primary bg-primary/10' : 'text-muted hover:text-white hover:bg-white/5'
+                )}
+                title="Italic"
+              >
+                <Italic className="w-4 h-4" />
+              </button>
               <div className="w-px h-4 bg-border mx-1" />
-              <button type="button" onClick={() => insertFormat('# ', '')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5 text-xs font-bold" title="H1"><Heading1 className="w-4 h-4" /></button>
-              <button type="button" onClick={() => insertFormat('## ', '')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5 text-xs font-bold" title="H2"><Heading2 className="w-4 h-4" /></button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                className={clsx(
+                  'p-1.5 rounded transition-colors',
+                  editor.isActive('heading', { level: 1 }) ? 'text-primary bg-primary/10' : 'text-muted hover:text-white hover:bg-white/5'
+                )}
+                title="H1"
+              >
+                <Heading1 className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                className={clsx(
+                  'p-1.5 rounded transition-colors',
+                  editor.isActive('heading', { level: 2 }) ? 'text-primary bg-primary/10' : 'text-muted hover:text-white hover:bg-white/5'
+                )}
+                title="H2"
+              >
+                <Heading2 className="w-4 h-4" />
+              </button>
               <div className="w-px h-4 bg-border mx-1" />
-              <button type="button" onClick={() => insertFormat('- ', '')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5" title="List"><List className="w-4 h-4" /></button>
-              <button type="button" onClick={() => insertFormat('- [ ] ', '')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5" title="Tasklist"><ListTodo className="w-4 h-4" /></button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleBulletList().run()}
+                className={clsx(
+                  'p-1.5 rounded transition-colors',
+                  editor.isActive('bulletList') ? 'text-primary bg-primary/10' : 'text-muted hover:text-white hover:bg-white/5'
+                )}
+                title="Bullet List"
+              >
+                <List className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                className={clsx(
+                  'p-1.5 rounded transition-colors',
+                  editor.isActive('orderedList') ? 'text-primary bg-primary/10' : 'text-muted hover:text-white hover:bg-white/5'
+                )}
+                title="Ordered List"
+              >
+                <ListTodo className="w-4 h-4" />
+              </button>
               <div className="w-px h-4 bg-border mx-1" />
-              <button type="button" onClick={() => insertFormat('`', '`')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5" title="Inline Code"><Code className="w-4 h-4" /></button>
-              <button type="button" onClick={() => insertFormat('```javascript\n', '\n```')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5" title="Code Block"><SquareCode className="w-4 h-4" /></button>
-              <button type="button" onClick={() => insertFormat('[', '](url)')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5" title="Insert Link"><Link2 className="w-4 h-4" /></button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleCode().run()}
+                className={clsx(
+                  'p-1.5 rounded transition-colors',
+                  editor.isActive('code') ? 'text-primary bg-primary/10' : 'text-muted hover:text-white hover:bg-white/5'
+                )}
+                title="Inline Code"
+              >
+                <Code className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                className={clsx(
+                  'p-1.5 rounded transition-colors',
+                  editor.isActive('codeBlock') ? 'text-primary bg-primary/10' : 'text-muted hover:text-white hover:bg-white/5'
+                )}
+                title="Code Block"
+              >
+                <SquareCode className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const url = window.prompt('Enter URL:')
+                  if (url) {
+                    editor.chain().focus().insertContent(`<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`).run()
+                  }
+                }}
+                className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5 transition-colors"
+                title="Insert Link"
+              >
+                <Link2 className="w-4 h-4" />
+              </button>
             </div>
           )}
 
@@ -322,14 +518,15 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
           )}>
             {/* Editor Pane */}
             {(editorLayout === 'edit' || editorLayout === 'split') && (
-              <div className={clsx(editorLayout === 'split' && 'border-r border-border pr-4')}>
-                <textarea
-                  id="notes-textarea"
-                  placeholder="Write your note in Markdown... Use toolbars or standard syntax."
-                  value={form.content}
-                  onChange={(e) => setForm((p) => ({ ...p, content: e.target.value }))}
-                  className="w-full bg-transparent text-sm text-white placeholder:text-muted outline-none resize-none min-h-[300px] h-full font-mono leading-relaxed focus:ring-0 focus:outline-none border-0 p-0"
-                />
+              <div className={clsx(
+                'min-h-[300px] bg-transparent text-sm text-white placeholder:text-muted outline-none resize-none font-sans leading-relaxed border-0 p-0',
+                editorLayout === 'split' && 'border-r border-border pr-4'
+              )}>
+                {editor ? (
+                  <EditorContent editor={editor} />
+                ) : (
+                  <div className="min-h-[300px] animate-pulse bg-white/5 rounded-lg" />
+                )}
               </div>
             )}
 
@@ -364,9 +561,17 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
           <div className="mt-4 pt-4 border-t border-border">
             <div className="flex flex-wrap gap-1.5 mb-2.5">
               {form.tags.map((tag) => (
-                <span key={tag} className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-semibold select-none", getTagColorClass(tag))}>
+                <span
+                  key={tag}
+                  className={clsx(
+                    'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-semibold select-none',
+                    getTagColorClass(tag)
+                  )}
+                >
                   #{tag}
-                  <button onClick={() => removeTag(tag)} className="hover:opacity-70"><X className="w-3 h-3" /></button>
+                  <button onClick={() => removeTag(tag)} className="hover:opacity-70">
+                    <X className="w-3 h-3" />
+                  </button>
                 </span>
               ))}
             </div>
@@ -408,7 +613,10 @@ function NoteCard({ note, onClick, onDelete }: { note: ProjectNote; onClick: () 
           {note.title}
         </p>
         <button
-          onClick={(e) => { e.stopPropagation(); onDelete() }}
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete()
+          }}
           className="p-1 rounded text-muted hover:text-danger hover:bg-danger/10 transition-all duration-150 opacity-0 group-hover:opacity-100 shrink-0"
         >
           <Trash2 className="w-3.5 h-3.5" />
@@ -418,7 +626,12 @@ function NoteCard({ note, onClick, onDelete }: { note: ProjectNote; onClick: () 
       {note.tags.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-1">
           {note.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className={clsx("text-[10px] px-2 py-0.5 rounded font-semibold select-none", getTagColorClass(tag))}>#{tag}</span>
+            <span
+              key={tag}
+              className={clsx('text-[10px] px-2 py-0.5 rounded font-semibold select-none', getTagColorClass(tag))}
+            >
+              #{tag}
+            </span>
           ))}
         </div>
       )}
