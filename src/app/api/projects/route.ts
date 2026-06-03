@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       },
       include: {
         _count: {
-          select: { links: true, notes: true, integrations: true, credentials: true },
+          select: { links: true, notes: true, tasks: true, credentials: true },
         },
         favorites: { where: { user_id: supaUser.id } },
       },
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
         tech_stack,
         logo_url,
       },
-      include: { _count: { select: { links: true, notes: true, integrations: true, credentials: true } } },
+      include: { _count: { select: { links: true, notes: true, tasks: true, credentials: true } } },
     })
 
     await logActivity(supaUser.id, 'CREATED', 'PROJECT', project.id, project.name)

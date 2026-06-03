@@ -10,7 +10,7 @@ export async function GET() {
     where: { user_id: supaUser.id },
     include: {
       project: {
-        include: { _count: { select: { links: true, notes: true, integrations: true, credentials: true } } },
+        include: { _count: { select: { links: true, notes: true, tasks: true, credentials: true } } },
       },
     },
     orderBy: { created_at: 'desc' },

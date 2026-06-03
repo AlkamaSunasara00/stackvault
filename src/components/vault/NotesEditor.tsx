@@ -201,9 +201,9 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
       {!isEditing ? (
         /* Grid view */
         notes.length === 0 ? (
-          <div className="glass-card p-10 text-center border border-[#EDEDEB] rounded-xl">
+          <div className="glass-card p-10 text-center border border-border rounded-xl bg-card">
             <FileText className="w-8 h-8 text-muted mx-auto mb-3 opacity-50" />
-            <p className="text-slate-800 font-medium mb-1">No notes yet</p>
+            <p className="text-white font-medium mb-1">No notes yet</p>
             <p className="text-muted text-sm mb-4">Capture ideas, logs, documentation, and project knowledge.</p>
             <Button onClick={openNew} iconLeft={<Plus className="w-4 h-4" />} size="sm">New Note</Button>
           </div>
@@ -234,27 +234,27 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card p-6 border border-[#EDEDEB] rounded-xl bg-white shadow-sm"
+          className="glass-card p-6 border border-border rounded-xl bg-card shadow-sm"
         >
           {/* Editor Header controls */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EDEDEB] pb-4 mb-4">
-            <button onClick={() => { setSelectedNote(null); setIsCreating(false) }} className="text-muted hover:text-slate-900 transition-colors flex items-center gap-1.5 text-sm font-medium">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4 mb-4">
+            <button onClick={() => { setSelectedNote(null); setIsCreating(false) }} className="text-muted hover:text-white transition-colors flex items-center gap-1.5 text-sm font-medium">
               <X className="w-4 h-4" /> Back to notes
             </button>
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setForm((prev) => ({ ...prev, is_pinned: !prev.is_pinned }))}
-                className={clsx('p-1.5 rounded-lg transition-colors', form.is_pinned ? 'text-warning bg-warning/10' : 'text-muted hover:text-slate-900 hover:bg-black/[0.04]')}
+                className={clsx('p-1.5 rounded-lg transition-colors', form.is_pinned ? 'text-warning bg-warning/10' : 'text-muted hover:text-white hover:bg-white/5')}
                 title={form.is_pinned ? 'Unpin note' : 'Pin note'}
               >
                 <Pin className="w-4 h-4" />
               </button>
 
               {/* Layout togglers */}
-              <div className="flex items-center bg-black/[0.03] border border-[#EDEDEB] rounded-lg p-0.5">
+              <div className="flex items-center bg-white/5 border border-border rounded-lg p-0.5">
                 <button
                   onClick={() => setEditorLayout('edit')}
-                  className={clsx('px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1', editorLayout === 'edit' ? 'bg-white text-slate-800 shadow-sm border border-[#EDEDEB]' : 'text-muted hover:text-slate-850')}
+                  className={clsx('px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1', editorLayout === 'edit' ? 'bg-[var(--notion-bg-active)] text-white shadow-sm border border-border' : 'text-muted hover:text-white')}
                   title="Write Mode"
                 >
                   <Pencil className="w-3.5 h-3.5" />
@@ -262,7 +262,7 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
                 </button>
                 <button
                   onClick={() => setEditorLayout('preview')}
-                  className={clsx('px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1', editorLayout === 'preview' ? 'bg-white text-slate-800 shadow-sm border border-[#EDEDEB]' : 'text-muted hover:text-slate-850')}
+                  className={clsx('px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1', editorLayout === 'preview' ? 'bg-[var(--notion-bg-active)] text-white shadow-sm border border-border' : 'text-muted hover:text-white')}
                   title="Preview Mode"
                 >
                   <Eye className="w-3.5 h-3.5" />
@@ -270,7 +270,7 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
                 </button>
                 <button
                   onClick={() => setEditorLayout('split')}
-                  className={clsx('hidden md:flex px-2.5 py-1 text-xs font-medium rounded-md transition-colors items-center gap-1', editorLayout === 'split' ? 'bg-white text-slate-800 shadow-sm border border-[#EDEDEB]' : 'text-muted hover:text-slate-850')}
+                  className={clsx('hidden md:flex px-2.5 py-1 text-xs font-medium rounded-md transition-colors items-center gap-1', editorLayout === 'split' ? 'bg-[var(--notion-bg-active)] text-white shadow-sm border border-border' : 'text-muted hover:text-white')}
                   title="Split Screen Layout"
                 >
                   <Columns className="w-3.5 h-3.5" />
@@ -294,24 +294,24 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
             placeholder="Untitled Note"
             value={form.title}
             onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-            className="w-full bg-transparent text-2xl font-bold text-slate-850 placeholder:text-slate-300 outline-none mb-2 border-0 px-0 focus:ring-0 focus:outline-none"
+            className="w-full bg-transparent text-2xl font-bold text-white placeholder:text-muted outline-none mb-2 border-0 px-0 focus:ring-0 focus:outline-none"
           />
 
           {/* Formatting Toolbar */}
           {editorLayout !== 'preview' && (
-            <div className="flex flex-wrap items-center gap-1 bg-black/[0.02] border border-[#EDEDEB] rounded-lg p-1 mb-3">
-              <button type="button" onClick={() => insertFormat('**', '**')} className="p-1.5 rounded text-slate-600 hover:text-slate-950 hover:bg-black/[0.04]" title="Bold"><Bold className="w-4 h-4" /></button>
-              <button type="button" onClick={() => insertFormat('*', '*')} className="p-1.5 rounded text-slate-600 hover:text-slate-950 hover:bg-black/[0.04]" title="Italic"><Italic className="w-4 h-4" /></button>
-              <div className="w-px h-4 bg-[#EDEDEB] mx-1" />
-              <button type="button" onClick={() => insertFormat('# ', '')} className="p-1.5 rounded text-slate-600 hover:text-slate-950 hover:bg-black/[0.04] text-xs font-bold" title="H1"><Heading1 className="w-4 h-4" /></button>
-              <button type="button" onClick={() => insertFormat('## ', '')} className="p-1.5 rounded text-slate-600 hover:text-slate-950 hover:bg-black/[0.04] text-xs font-bold" title="H2"><Heading2 className="w-4 h-4" /></button>
-              <div className="w-px h-4 bg-[#EDEDEB] mx-1" />
-              <button type="button" onClick={() => insertFormat('- ', '')} className="p-1.5 rounded text-slate-600 hover:text-slate-950 hover:bg-black/[0.04]" title="List"><List className="w-4 h-4" /></button>
-              <button type="button" onClick={() => insertFormat('- [ ] ', '')} className="p-1.5 rounded text-slate-600 hover:text-slate-950 hover:bg-black/[0.04]" title="Tasklist"><ListTodo className="w-4 h-4" /></button>
-              <div className="w-px h-4 bg-[#EDEDEB] mx-1" />
-              <button type="button" onClick={() => insertFormat('`', '`')} className="p-1.5 rounded text-slate-600 hover:text-slate-950 hover:bg-black/[0.04]" title="Inline Code"><Code className="w-4 h-4" /></button>
-              <button type="button" onClick={() => insertFormat('```javascript\n', '\n```')} className="p-1.5 rounded text-slate-600 hover:text-slate-950 hover:bg-black/[0.04]" title="Code Block"><SquareCode className="w-4 h-4" /></button>
-              <button type="button" onClick={() => insertFormat('[', '](url)')} className="p-1.5 rounded text-slate-600 hover:text-slate-950 hover:bg-black/[0.04]" title="Insert Link"><Link2 className="w-4 h-4" /></button>
+            <div className="flex flex-wrap items-center gap-1 bg-white/[0.02] border border-border rounded-lg p-1 mb-3">
+              <button type="button" onClick={() => insertFormat('**', '**')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5" title="Bold"><Bold className="w-4 h-4" /></button>
+              <button type="button" onClick={() => insertFormat('*', '*')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5" title="Italic"><Italic className="w-4 h-4" /></button>
+              <div className="w-px h-4 bg-border mx-1" />
+              <button type="button" onClick={() => insertFormat('# ', '')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5 text-xs font-bold" title="H1"><Heading1 className="w-4 h-4" /></button>
+              <button type="button" onClick={() => insertFormat('## ', '')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5 text-xs font-bold" title="H2"><Heading2 className="w-4 h-4" /></button>
+              <div className="w-px h-4 bg-border mx-1" />
+              <button type="button" onClick={() => insertFormat('- ', '')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5" title="List"><List className="w-4 h-4" /></button>
+              <button type="button" onClick={() => insertFormat('- [ ] ', '')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5" title="Tasklist"><ListTodo className="w-4 h-4" /></button>
+              <div className="w-px h-4 bg-border mx-1" />
+              <button type="button" onClick={() => insertFormat('`', '`')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5" title="Inline Code"><Code className="w-4 h-4" /></button>
+              <button type="button" onClick={() => insertFormat('```javascript\n', '\n```')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5" title="Code Block"><SquareCode className="w-4 h-4" /></button>
+              <button type="button" onClick={() => insertFormat('[', '](url)')} className="p-1.5 rounded text-muted hover:text-white hover:bg-white/5" title="Insert Link"><Link2 className="w-4 h-4" /></button>
             </div>
           )}
 
@@ -322,27 +322,27 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
           )}>
             {/* Editor Pane */}
             {(editorLayout === 'edit' || editorLayout === 'split') && (
-              <div className={clsx(editorLayout === 'split' && 'border-r border-[#EDEDEB] pr-4')}>
+              <div className={clsx(editorLayout === 'split' && 'border-r border-border pr-4')}>
                 <textarea
                   id="notes-textarea"
                   placeholder="Write your note in Markdown... Use toolbars or standard syntax."
                   value={form.content}
                   onChange={(e) => setForm((p) => ({ ...p, content: e.target.value }))}
-                  className="w-full bg-transparent text-sm text-slate-800 placeholder:text-slate-400 outline-none resize-none min-h-[300px] h-full font-mono leading-relaxed focus:ring-0 focus:outline-none border-0 p-0"
+                  className="w-full bg-transparent text-sm text-white placeholder:text-muted outline-none resize-none min-h-[300px] h-full font-mono leading-relaxed focus:ring-0 focus:outline-none border-0 p-0"
                 />
               </div>
             )}
 
             {/* Preview Pane */}
             {(editorLayout === 'preview' || editorLayout === 'split') && (
-              <div className="prose prose-sm max-w-none text-slate-850 overflow-y-auto">
+              <div className="prose prose-invert prose-sm max-w-none text-white/90 overflow-y-auto">
                 <ReactMarkdown
                   components={{
                     code({ className, children, ...props }) {
                       const match = /language-(\w+)/.exec(className || '')
                       const inline = !className || !className.includes('language-')
                       return inline ? (
-                        <code className="bg-black/[0.05] text-[#D15400] px-1.5 py-0.5 rounded font-mono text-xs" {...props}>
+                        <code className="bg-white/5 text-[var(--notion-red)] px-1.5 py-0.5 rounded font-mono text-xs" {...props}>
                           {children}
                         </code>
                       ) : (
@@ -361,7 +361,7 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
           </div>
 
           {/* Tags editing */}
-          <div className="mt-4 pt-4 border-t border-[#EDEDEB]">
+          <div className="mt-4 pt-4 border-t border-border">
             <div className="flex flex-wrap gap-1.5 mb-2.5">
               {form.tags.map((tag) => (
                 <span key={tag} className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-semibold select-none", getTagColorClass(tag))}>
@@ -376,7 +376,7 @@ export function NotesEditor({ projectId }: NotesEditorProps) {
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={addTag}
-              className="bg-transparent text-sm text-slate-500 placeholder:text-slate-300 outline-none w-full border-0 px-0 focus:ring-0 focus:outline-none"
+              className="bg-transparent text-sm text-muted placeholder:text-white/20 outline-none w-full border-0 px-0 focus:ring-0 focus:outline-none"
             />
           </div>
         </motion.div>
@@ -400,10 +400,10 @@ function NoteCard({ note, onClick, onDelete }: { note: ProjectNote; onClick: () 
     <motion.div
       whileHover={{ y: -2 }}
       onClick={onClick}
-      className="glass-card p-5 cursor-pointer group flex flex-col gap-2.5 border border-[#EDEDEB] rounded-xl hover:shadow-md transition-all duration-200"
+      className="glass-card p-5 cursor-pointer group flex flex-col gap-2.5 border border-border rounded-xl hover:shadow-md transition-all duration-200 bg-card"
     >
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-bold text-slate-800 line-clamp-1">
+        <p className="text-sm font-bold text-white line-clamp-1">
           {note.is_pinned && <Pin className="w-3.5 h-3.5 text-warning inline mr-1" />}
           {note.title}
         </p>
@@ -414,7 +414,7 @@ function NoteCard({ note, onClick, onDelete }: { note: ProjectNote; onClick: () 
           <Trash2 className="w-3.5 h-3.5" />
         </button>
       </div>
-      <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed">{note.content || 'Empty note'}</p>
+      <p className="text-xs text-muted line-clamp-3 leading-relaxed">{note.content || 'Empty note'}</p>
       {note.tags.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-1">
           {note.tags.slice(0, 3).map((tag) => (

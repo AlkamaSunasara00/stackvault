@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { Project, ProjectLink, ProjectNote, Environment, EnvironmentVariable, Credential, ProjectIntegration, Task } from '@/types'
+import { Project, ProjectLink, ProjectNote, Environment, EnvironmentVariable, Credential, Task } from '@/types'
 
 async function fetchProject(id: string) {
   const { data } = await axios.get<{ project: Project }>(`/api/projects/${id}`)
@@ -55,23 +55,7 @@ export function useProject(id: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
   })
 
-  // ---- Integrations ----
-  const createIntegration = useMutation({
-    mutationFn: (data: Partial<ProjectIntegration>) =>
-      axios.post('/api/integrations', { ...data, project_id: id }).then((r) => r.data.integration),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
-  })
-
-  const updateIntegration = useMutation({
-    mutationFn: ({ itemId, data }: { itemId: string; data: Partial<ProjectIntegration> }) =>
-      axios.put(`/api/integrations/${itemId}`, data).then((r) => r.data.integration),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
-  })
-
-  const deleteIntegration = useMutation({
-    mutationFn: (itemId: string) => axios.delete(`/api/integrations/${itemId}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }),
-  })
+  // Integrations code deleted
 
   // ---- Environments ----
   const createEnvironment = useMutation({
@@ -152,10 +136,6 @@ export function useProject(id: string) {
     createNote: createNote.mutateAsync,
     updateNote: updateNote.mutateAsync,
     deleteNote: deleteNote.mutateAsync,
-    // Integrations
-    createIntegration: createIntegration.mutateAsync,
-    updateIntegration: updateIntegration.mutateAsync,
-    deleteIntegration: deleteIntegration.mutateAsync,
     // Environments
     createEnvironment: createEnvironment.mutateAsync,
     createEnvVariable: createEnvVariable.mutateAsync,

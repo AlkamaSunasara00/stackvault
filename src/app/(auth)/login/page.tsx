@@ -107,18 +107,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-white font-sans">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#191919] font-sans">
       {/* Left pane - Showcase */}
       <AuthShowcase />
 
       {/* Right pane - Form */}
-      <div className="flex flex-col items-center justify-center p-8 lg:col-span-7 bg-white relative">
+      <div className="flex flex-col items-center justify-center p-8 lg:col-span-7 bg-[#191919] relative">
         {/* Mobile Header */}
         <div className="lg:hidden flex items-center gap-2 mb-8 absolute top-8">
           <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
             <Zap className="w-5 h-5 text-primary" />
           </div>
-          <span className="text-xl font-bold text-slate-900">StackVault</span>
+          <span className="text-xl font-bold text-white">StackVault</span>
         </div>
 
         <motion.div
@@ -128,8 +128,8 @@ export default function LoginPage() {
           className="w-full max-w-sm space-y-6"
         >
           <div className="text-center md:text-left">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Log in</h1>
-            <p className="text-slate-500 mt-1 text-sm">Welcome back. Enter your workspace credentials.</p>
+            <h1 className="text-2xl font-bold text-white tracking-tight">Log in</h1>
+            <p className="text-muted mt-1 text-sm">Welcome back. Enter your workspace credentials.</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -167,20 +167,20 @@ export default function LoginPage() {
 
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#EDEDEB]" />
+              <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white px-3 text-slate-400 font-medium">New to StackVault?</span>
+              <span className="bg-[#191919] px-3 text-muted font-medium">New to StackVault?</span>
             </div>
           </div>
 
           <div className="text-center">
-            <Link href="/register" className="inline-flex items-center justify-center w-full px-4 py-2.5 border border-[#C4C4C2] rounded-lg text-sm font-semibold text-slate-700 hover:bg-black/[0.04] transition-colors">
+            <Link href="/register" className="inline-flex items-center justify-center w-full px-4 py-2.5 border border-border rounded-lg text-sm font-semibold text-white hover:bg-white/5 transition-colors">
               Create account
             </Link>
           </div>
 
-          <p className="text-center text-[10px] text-slate-400">
+          <p className="text-center text-[10px] text-muted">
             By logging in, you agree to our Terms and Privacy Policy.
           </p>
         </motion.div>

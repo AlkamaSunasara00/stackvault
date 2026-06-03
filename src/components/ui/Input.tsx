@@ -138,7 +138,7 @@ export const Select = React.memo(
           className={twMerge(
             clsx(
               'input-dark appearance-none cursor-pointer',
-              'bg-[#0d1420]',
+              'bg-[var(--notion-bg-dropdown)]',
               error && 'border-danger/50',
               className
             )

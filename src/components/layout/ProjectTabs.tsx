@@ -12,7 +12,6 @@ import { clsx } from 'clsx'
 const tabs = [
   { id: 'overview', label: 'Overview', icon: LayoutGrid },
   { id: 'tasks', label: 'Tasks', icon: ListTodo },
-  { id: 'integrations', label: 'Integrations', icon: Blocks },
   { id: 'links', label: 'Links', icon: LinkIcon },
   { id: 'env', label: 'Env Variables', icon: FileCode },
   { id: 'notes', label: 'Notes', icon: FileText },

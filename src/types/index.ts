@@ -56,14 +56,12 @@ export interface Project {
   notes?: ProjectNote[]
   environments?: Environment[]
   credentials?: Credential[]
-  integrations?: ProjectIntegration[]
   favorites?: Favorite[]
   tasks?: Task[]
   _count?: {
     links: number
     notes: number
     credentials: number
-    integrations: number
     tasks: number
   }
 }
@@ -89,18 +87,7 @@ export interface ProjectNote {
   updated_at: string
 }
 
-export interface ProjectIntegration {
-  id: string
-  project_id: string
-  name: string
-  category: string // PAYMENTS, AI, AUTH, MAILING, DATABASE, OTHER
-  status: string // ACTIVE, TESTING, DEPRECATED, PLANNED
-  url?: string | null
-  api_doc_url?: string | null
-  description?: string | null
-  created_at: string
-  updated_at: string
-}
+// ProjectIntegration interface has been deleted
 
 export interface Environment {
   id: string
@@ -160,7 +147,7 @@ export interface Notification {
 
 export interface SearchResult {
   id: string
-  type: 'project' | 'note' | 'link' | 'integration' | 'credential'
+  type: 'project' | 'note' | 'link' | 'task' | 'credential'
   title: string
   subtitle?: string
   projectId?: string
@@ -170,7 +157,7 @@ export interface SearchResults {
   projects: SearchResult[]
   notes: SearchResult[]
   links: SearchResult[]
-  integrations: SearchResult[]
+  tasks: SearchResult[]
   credentials: SearchResult[]
 }
 

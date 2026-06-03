@@ -18,7 +18,7 @@ export async function GET(
       include: {
         links: { orderBy: { created_at: 'desc' } },
         notes: { orderBy: [{ is_pinned: 'desc' }, { updated_at: 'desc' }] },
-        integrations: { orderBy: { created_at: 'desc' } },
+        // integrations fetch deleted
         environments: {
           include: {
             variables: { orderBy: { key: 'asc' } },
@@ -27,7 +27,7 @@ export async function GET(
         },
         credentials: { orderBy: { created_at: 'desc' } },
         tasks: { orderBy: { created_at: 'desc' } },
-        _count: { select: { links: true, notes: true, integrations: true, credentials: true, tasks: true } },
+        _count: { select: { links: true, notes: true, credentials: true, tasks: true } },
       },
     })
 

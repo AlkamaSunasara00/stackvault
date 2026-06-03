@@ -13,7 +13,7 @@ module.exports = {
         sidebar: 'var(--notion-bg-sidebar)',
         card: 'var(--notion-bg-card)',
         primary: 'var(--notion-accent)',
-        secondary: 'var(--notion-accent-soft)',
+        secondary: 'var(--notion-blue)',
         muted: 'var(--notion-text-2)',
         danger: 'var(--notion-red)',
         warning: 'var(--notion-yellow)',

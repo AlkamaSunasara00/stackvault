@@ -109,18 +109,18 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-white font-sans">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#191919] font-sans">
       {/* Left pane - Showcase */}
       <AuthShowcase />
 
       {/* Right pane - Form */}
-      <div className="flex flex-col items-center justify-center p-8 lg:col-span-7 bg-white relative">
+      <div className="flex flex-col items-center justify-center p-8 lg:col-span-7 bg-[#191919] relative">
         {/* Mobile Header */}
         <div className="lg:hidden flex items-center gap-2 mb-8 absolute top-8">
           <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
             <Zap className="w-5 h-5 text-primary" />
           </div>
-          <span className="text-xl font-bold text-slate-900">StackVault</span>
+          <span className="text-xl font-bold text-white">StackVault</span>
         </div>
 
         <motion.div
@@ -131,10 +131,10 @@ export default function ForgotPasswordPage() {
         >
           {sent ? (
             <div className="text-center space-y-4">
-              <CheckCircle className="w-12 h-12 text-[#047857] mx-auto bg-[#ECFDF5] p-2 rounded-full border border-[#D1FAE5]" />
+              <CheckCircle className="w-12 h-12 text-[var(--notion-green)] mx-auto bg-[var(--notion-green-bg)] p-2 rounded-full border border-green-500/20" />
               <div>
-                <h2 className="text-xl font-bold text-slate-900 mb-1">Check your email</h2>
-                <p className="text-slate-500 text-sm leading-relaxed">
+                <h2 className="text-xl font-bold text-white mb-1">Check your email</h2>
+                <p className="text-muted text-sm leading-relaxed">
                   We've sent a password reset link to your email address. Check your inbox to proceed.
                 </p>
               </div>
@@ -147,8 +147,8 @@ export default function ForgotPasswordPage() {
           ) : (
             <>
               <div className="text-center md:text-left">
-                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Reset password</h1>
-                <p className="text-slate-500 mt-1 text-sm">Enter your registered email below to receive a password reset link.</p>
+                <h1 className="text-2xl font-bold text-white tracking-tight">Reset password</h1>
+                <p className="text-muted mt-1 text-sm">Enter your registered email below to receive a password reset link.</p>
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -167,7 +167,7 @@ export default function ForgotPasswordPage() {
               </form>
 
               <div className="text-center pt-2">
-                <Link href="/login" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors">
+                <Link href="/login" className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-white transition-colors">
                   <ArrowLeft className="w-3.5 h-3.5" /> Back to log in
                 </Link>
               </div>
